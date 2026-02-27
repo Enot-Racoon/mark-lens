@@ -7,11 +7,25 @@ A cross-platform desktop Markdown viewer and editor built with Tauri, React, and
 - **Live Preview**: Edit Markdown with real-time preview
 - **Multiple View Modes**: Switch between editor, preview, or split view
 - **File Management**: Open and save Markdown files
+- **Recent Files**: Quick access to recently opened files
+- **Native Menus**: Application, File, and View menus
+- **Keyboard Shortcuts**: Full keyboard navigation support
+- **Drag & Drop**: Open files by dragging them into the window
+- **File Associations**: Open .md files directly with Mark Lens
 - **Cross-Platform**: Works on macOS, Windows, and Linux
 - **Dark Theme**: Easy on the eyes with a modern dark UI
-- **Keyboard Shortcuts**: 
-  - `Ctrl/Cmd + S` - Save file
-  - `Ctrl/Cmd + Shift + S` - Save As
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + O` | Open file |
+| `Cmd/Ctrl + S` | Save file |
+| `Cmd/Ctrl + Shift + S` | Save As |
+| `Cmd/Ctrl + R` | Reload file |
+| `Cmd/Ctrl + W` | Close window |
+| `Cmd/Ctrl + Q` | Quit application |
+| `Cmd/Ctrl + F` | Toggle fullscreen |
 
 ## Tech Stack
 
