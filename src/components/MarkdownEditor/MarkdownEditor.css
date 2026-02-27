@@ -1,0 +1,192 @@
+.markdown-editor {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background-color: #1e1e1e;
+}
+
+.markdown-editor-split {
+  flex-direction: row;
+}
+
+.markdown-editor-edit,
+.markdown-editor-preview {
+  flex-direction: column;
+}
+
+.markdown-editor-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.markdown-editor-split .markdown-editor-pane {
+  width: 50%;
+}
+
+.markdown-editor-empty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  background-color: #1e1e1e;
+}
+
+.markdown-editor-empty .hint {
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+
+.markdown-editor-textarea {
+  flex: 1;
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  resize: none;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  outline: none;
+}
+
+.markdown-editor-textarea::placeholder {
+  color: #666;
+}
+
+.markdown-editor-preview {
+  background-color: #252526;
+  border-left: 1px solid #333;
+}
+
+.markdown-editor-content {
+  flex: 1;
+  padding: 1rem 2rem;
+  overflow-y: auto;
+  color: #d4d4d4;
+  line-height: 1.6;
+}
+
+.markdown-editor-content :global(h1),
+.markdown-editor-content :global(h2),
+.markdown-editor-content :global(h3),
+.markdown-editor-content :global(h4),
+.markdown-editor-content :global(h5),
+.markdown-editor-content :global(h6) {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #fff;
+}
+
+.markdown-editor-content :global(h1) {
+  font-size: 2em;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.3em;
+}
+
+.markdown-editor-content :global(h2) {
+  font-size: 1.5em;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.3em;
+}
+
+.markdown-editor-content :global(h3) {
+  font-size: 1.25em;
+}
+
+.markdown-editor-content :global(p) {
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+.markdown-editor-content :global(a) {
+  color: #58a6ff;
+  text-decoration: none;
+}
+
+.markdown-editor-content :global(a:hover) {
+  text-decoration: underline;
+}
+
+.markdown-editor-content :global(code) {
+  background-color: #333;
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: 0.9em;
+}
+
+.markdown-editor-content :global(pre) {
+  background-color: #333;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.markdown-editor-content :global(pre code) {
+  background-color: transparent;
+  padding: 0;
+}
+
+.markdown-editor-content :global(blockquote) {
+  margin: 0;
+  padding: 0 1em;
+  color: #888;
+  border-left: 4px solid #333;
+}
+
+.markdown-editor-content :global(ul),
+.markdown-editor-content :global(ol) {
+  padding-left: 2em;
+  margin-top: 0;
+  margin-bottom: 1em;
+}
+
+.markdown-editor-content :global(li) {
+  margin-top: 0.25em;
+}
+
+.markdown-editor-content :global(hr) {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 1.5em 0;
+}
+
+.markdown-editor-content :global(table) {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.markdown-editor-content :global(th),
+.markdown-editor-content :global(td) {
+  border: 1px solid #333;
+  padding: 0.5em 1em;
+  text-align: left;
+}
+
+.markdown-editor-content :global(th) {
+  background-color: #333;
+  font-weight: 600;
+}
+
+.markdown-editor-content :global(tr:nth-child(even)) {
+  background-color: #2a2a2a;
+}
+
+.markdown-editor-content :global(img) {
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-editor-content :global(input[type="checkbox"]) {
+  margin-right: 0.5em;
+}
