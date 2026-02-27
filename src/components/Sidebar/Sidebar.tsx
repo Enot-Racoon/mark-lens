@@ -1,9 +1,11 @@
-import React, { useCallback } from "react";
-import { useEditorStore } from "../../stores";
+import React, { useCallback, useState } from "react";
+import { useEditorStore, useRecentFilesStore } from "../../stores";
 import "./Sidebar.css";
 
 export const Sidebar: React.FC = () => {
   const { files, currentFile, setCurrentFile, removeFile, openFile } = useEditorStore();
+  const { recentFiles, clearRecentFiles } = useRecentFilesStore();
+  const [showRecentMenu, setShowRecentMenu] = useState(false);
 
   const handleOpenFile = useCallback(async () => {
     await openFile();
@@ -24,18 +26,72 @@ export const Sidebar: React.FC = () => {
     [removeFile]
   );
 
+  const handleOpenRecent = useCallback(
+    async (path: string) => {
+      await useEditorStore.getState().openFileByPath(path);
+      setShowRecentMenu(false);
+    },
+    []
+  );
+
+  const handleClearRecent = useCallback(async () => {
+    await clearRecentFiles();
+    setShowRecentMenu(false);
+  }, [clearRecentFiles]);
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <h2 className="sidebar-title">Files</h2>
-        <button className="sidebar-btn sidebar-btn-primary" onClick={handleOpenFile}>
-          Open
-        </button>
+        <div className="sidebar-header-actions">
+          <button className="sidebar-btn sidebar-btn-primary" onClick={handleOpenFile}>
+            Open
+          </button>
+          <div className="sidebar-dropdown">
+            <button
+              className="sidebar-btn sidebar-btn-dropdown"
+              onClick={() => setShowRecentMenu(!showRecentMenu)}
+              title="Open Recent"
+            >
+              ▾
+            </button>
+            {showRecentMenu && (
+              <div className="sidebar-dropdown-menu">
+                {recentFiles.length === 0 ? (
+                  <div className="sidebar-dropdown-empty">No recent files</div>
+                ) : (
+                  <>
+                    <ul className="recent-files-list">
+                      {recentFiles.map((file) => (
+                        <li
+                          key={file.path}
+                          className="recent-file-item"
+                          onClick={() => handleOpenRecent(file.path)}
+                          title={file.path}
+                        >
+                          {file.name}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="sidebar-dropdown-divider" />
+                    <button
+                      className="sidebar-dropdown-item clear-recent"
+                      onClick={handleClearRecent}
+                    >
+                      Clear Menu
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
       <div className="sidebar-content">
         {files.length === 0 ? (
           <div className="sidebar-empty">
             <p>No files open</p>
+            <p className="sidebar-hint">Open a markdown file to start editing</p>
           </div>
         ) : (
           <ul className="file-list">

@@ -1,17 +1,22 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Sidebar } from "../Sidebar";
-import { useEditorStore } from "../../../stores";
+import { useEditorStore, useRecentFilesStore } from "../../../stores";
 
 vi.mock("../../../stores", () => ({
   useEditorStore: vi.fn(),
+  useRecentFilesStore: vi.fn(() => ({
+    recentFiles: [],
+    clearRecentFiles: vi.fn(),
+  })),
 }));
 
 describe("Sidebar", () => {
   const mockSetCurrentFile = vi.fn();
   const mockRemoveFile = vi.fn();
   const mockOpenFile = vi.fn();
+  const mockClearRecentFiles = vi.fn();
 
   const mockFiles = [
     {
@@ -36,6 +41,10 @@ describe("Sidebar", () => {
       setCurrentFile: mockSetCurrentFile,
       removeFile: mockRemoveFile,
       openFile: mockOpenFile,
+    });
+    (useRecentFilesStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+      recentFiles: [],
+      clearRecentFiles: mockClearRecentFiles,
     });
   });
 

@@ -1,9 +1,17 @@
+import { useEffect } from "react";
 import { Toolbar, Sidebar, MarkdownEditor } from "./components";
-import { useKeyboardShortcuts } from "./hooks";
+import { useEditorStore } from "./stores";
+import { useDragAndDrop } from "./hooks";
 import "./App.css";
 
 function App() {
-  useKeyboardShortcuts();
+  const setupFileWatcher = useEditorStore((state) => state.setupFileWatcher);
+
+  useEffect(() => {
+    setupFileWatcher();
+  }, [setupFileWatcher]);
+
+  useDragAndDrop();
 
   return (
     <div className="app">

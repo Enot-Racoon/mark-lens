@@ -26,6 +26,11 @@
   margin: 0;
 }
 
+.sidebar-header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .sidebar-btn {
   padding: 0.25rem 0.75rem;
   font-size: 0.75rem;
@@ -48,6 +53,96 @@
 
 .sidebar-btn-primary:hover {
   background-color: #1177bb;
+}
+
+.sidebar-btn-dropdown {
+  padding: 0.25rem 0.5rem;
+  min-width: 28px;
+}
+
+.sidebar-dropdown {
+  position: relative;
+}
+
+.sidebar-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 100;
+  min-width: 200px;
+  max-width: 300px;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: #252526;
+  border: 1px solid #333;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  margin-top: 0.25rem;
+}
+
+.sidebar-dropdown-empty {
+  padding: 0.75rem 1rem;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.recent-files-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.recent-file-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  color: #d4d4d4;
+  font-size: 0.875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-file-item:hover {
+  background-color: #37373d;
+}
+
+.sidebar-dropdown-divider {
+  border-top: 1px solid #333;
+  margin: 0.25rem 0;
+}
+
+.sidebar-dropdown-item {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #d4d4d4;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.sidebar-dropdown-item:hover {
+  background-color: #37373d;
+}
+
+.sidebar-dropdown-item.clear-recent {
+  color: #f48771;
+}
+
+.sidebar-hint {
+  font-size: 0.75rem;
+  color: #555;
+  margin-top: 0.25rem;
+}
+
+/* Close dropdown when clicking outside */
+.sidebar-dropdown-open {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
 }
 
 .sidebar-content {

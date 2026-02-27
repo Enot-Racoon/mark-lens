@@ -19,3 +19,9 @@ export interface FileSystemEntry {
   isDirectory: boolean;
   children?: FileSystemEntry[];
 }
+
+export interface RecentFile {
+  path: string;
+  name: string;
+  lastOpened: number;
+}
