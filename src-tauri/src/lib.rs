@@ -182,6 +182,14 @@ fn clear_startup_files(state: State<StartupFiles>) {
     paths.clear();
 }
 
+/// Set window title
+#[tauri::command]
+fn set_window_title(app: AppHandle, title: String) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.set_title(&title);
+    }
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -196,6 +204,7 @@ pub fn run() {
             open_in_default_editor,
             get_startup_files,
             clear_startup_files,
+            set_window_title,
             fs::read_file,
             fs::write_file,
             fs::file_exists,

@@ -25,6 +25,7 @@
 }
 
 .toolbar-title {
+  display: none;
   font-weight: 600;
   color: #fff;
   font-size: 0.875rem;

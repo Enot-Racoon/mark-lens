@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { open } from "@tauri-apps/plugin-dialog";
+import { invoke } from "@tauri-apps/api/core";
 import type { MarkdownFile } from "../types";
 import { generateId } from "../lib/markdown";
 import { useRecentFilesStore } from "./recentFilesStore";
@@ -62,6 +63,14 @@ export const useEditorStore = create<EditorState & EditorActions>()(
 
     setCurrentFile: (file: MarkdownFile | null) => {
       set({ currentFile: file, isModified: false });
+      // Update window title
+      if (file) {
+        invoke("set_window_title", { title: `${file.name} - Mark Lens` })
+          .catch(console.error);
+      } else {
+        invoke("set_window_title", { title: "Mark Lens" })
+          .catch(console.error);
+      }
     },
 
     setContent: (content: string) => {
@@ -76,6 +85,9 @@ export const useEditorStore = create<EditorState & EditorActions>()(
           f.id === currentFile.id ? { ...f, content } : f,
         );
         set({ files });
+        // Update window title with modified indicator
+        invoke("set_window_title", { title: `${currentFile.name}* - Mark Lens` })
+          .catch(console.error);
       }
     },
 
@@ -194,6 +206,9 @@ export const useEditorStore = create<EditorState & EditorActions>()(
       }
 
       set({ isModified: false });
+      // Update window title (remove modified indicator)
+      invoke("set_window_title", { title: `${currentFile.name} - Mark Lens` })
+        .catch(console.error);
       return true;
     },
 
@@ -240,6 +255,10 @@ export const useEditorStore = create<EditorState & EditorActions>()(
             currentFile: newFile,
             isModified: false,
           });
+
+          // Update window title with new filename
+          invoke("set_window_title", { title: `${name} - Mark Lens` })
+            .catch(console.error);
 
           useRecentFilesStore.getState().addRecentFile(path, name);
 
