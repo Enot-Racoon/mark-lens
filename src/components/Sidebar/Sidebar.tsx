@@ -95,8 +95,6 @@ export const Sidebar: React.FC = () => {
     );
   }
 
-  console.log("files", files);
-
   return (
     <>
       <aside className="sidebar" style={{ width: sidebarWidth }}>

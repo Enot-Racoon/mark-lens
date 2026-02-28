@@ -91,9 +91,13 @@ export const useEditorStore = create<EditorState & EditorActions>()(
        * Internal helper to refresh UI without changing state
        */
       _updateUI: () => {
-        console.log("[editorStore] _updateUI");
+        const cn = get().currentFile?.name;
+        const hasNamesake =
+          get().files.filter((f: MarkdownFile) => f.name === cn).length > 1;
+
         const { currentFile, isModified } = get();
-        updateWindowTitle(currentFile?.name ?? null, isModified);
+        const title = hasNamesake ? currentFile?.path : cn;
+        updateWindowTitle(title ?? null, isModified);
       },
 
       setContent: (content: string) => {
