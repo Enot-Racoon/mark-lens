@@ -91,8 +91,9 @@ export const useEditorStore = create<EditorState & EditorActions>()(
        * Internal helper to refresh UI without changing state
        */
       _updateUI: () => {
+        console.log("[editorStore] _updateUI");
         const { currentFile, isModified } = get();
-        updateWindowTitle(currentFile?.path ?? null, isModified);
+        updateWindowTitle(currentFile?.name ?? null, isModified);
       },
 
       setContent: (content: string) => {

@@ -1,12 +1,12 @@
 mod fs;
 
 use serde::{Deserialize, Serialize};
+use std::sync::Mutex;
 use tauri::{
     menu::{Menu, MenuItem, Submenu},
     AppHandle, Emitter, Manager, State,
 };
 use tauri_plugin_dialog::DialogExt;
-use std::sync::Mutex;
 
 const MAX_RECENT_FILES: usize = 10;
 
@@ -95,7 +95,11 @@ fn clear_recent_files(app: AppHandle) {
     // Save to disk
     if let Some(app_dir) = app.path().app_data_dir().ok() {
         let state_path = app_dir.join("recent_files.json");
-        std::fs::write(state_path, serde_json::to_string(&*state).unwrap_or_default()).ok();
+        std::fs::write(
+            state_path,
+            serde_json::to_string(&*state).unwrap_or_default(),
+        )
+        .ok();
     }
 }
 
@@ -123,8 +127,13 @@ pub fn build_menu(app: &AppHandle) -> Result<Menu<tauri::Wry>, tauri::Error> {
     let open_mi = MenuItem::with_id(app, "open", "Open…", true, Some("CmdOrCtrl+O"))?;
     // let open_recent_mi = MenuItem::with_id(app, "open_recent", "Open Recent", true, None::<&str>)?;
     // let clear_recent_mi = MenuItem::with_id(app, "clear_recent", "Clear Menu", true, None::<&str>)?;
-    let close_window_mi =
-        MenuItem::with_id(app, "close_window", "Close Window", true, Some("CmdOrCtrl+W"))?;
+    let close_window_mi = MenuItem::with_id(
+        app,
+        "close_window",
+        "Close Window",
+        true,
+        Some("CmdOrCtrl+W"),
+    )?;
 
     let reload_mi = MenuItem::with_id(app, "reload", "Reload", true, Some("CmdOrCtrl+R"))?;
     let toggle_fullscreen_mi = MenuItem::with_id(
@@ -146,21 +155,11 @@ pub fn build_menu(app: &AppHandle) -> Result<Menu<tauri::Wry>, tauri::Error> {
             &close_window_mi,
         ],
     )?;
-    let view_menu = Submenu::with_items(
-        app,
-        "View",
-        true,
-        &[&reload_mi, &toggle_fullscreen_mi],
-    )?;
+    let view_menu = Submenu::with_items(app, "View", true, &[&reload_mi, &toggle_fullscreen_mi])?;
 
     #[cfg(target_os = "macos")]
     {
-        let app_menu = Submenu::with_items(
-            app,
-            "Mark Lens",
-            true,
-            &[&about_mi, &quit_mi],
-        )?;
+        let app_menu = Submenu::with_items(app, "Mark Lens", true, &[&about_mi, &quit_mi])?;
         return Menu::with_items(app, &[&app_menu, &file_menu, &view_menu]);
     }
 
@@ -218,12 +217,12 @@ pub fn run() {
         ])
         .setup(|app| {
             eprintln!("[setup] Application starting up...");
-            
+
             // Load recent files from disk
             let recent_files = load_recent_files(&app.handle());
             *app.state::<tokio::sync::Mutex<RecentFilesState>>()
                 .blocking_lock() = recent_files.clone();
-            
+
             eprintln!("[setup] Loaded {} recent files", recent_files.files.len());
 
             // Set up menu
@@ -298,7 +297,7 @@ pub fn run() {
 
             // Store startup files in state
             let startup_files = app.state::<StartupFiles>();
-            
+
             // Filter only markdown files (ignore cargo/tauri flags in dev mode)
             for path in args.into_iter()
                 .filter(|path| {
@@ -322,7 +321,7 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             if let tauri::RunEvent::Opened { urls } = event {
                 eprintln!("[RunEvent::Opened] Received {} file(s)", urls.len());
-                
+
                 let startup_files = app_handle.state::<StartupFiles>();
                 for url in urls {
                     eprintln!("[RunEvent::Opened] File URL: {}", url);
@@ -332,12 +331,12 @@ pub fn run() {
                     startup_files.paths.lock().unwrap().push(path.to_string());
                 }
             }
-            
+
             // Handle Windows/Linux file open events
             #[cfg(not(target_os = "macos"))]
             if let tauri::RunEvent::Opened { urls } = event {
                 eprintln!("[RunEvent::Opened] Received {} file(s)", urls.len());
-                
+
                 let startup_files = app_handle.state::<StartupFiles>();
                 for url in urls {
                     eprintln!("[RunEvent::Opened] File URL: {}", url);

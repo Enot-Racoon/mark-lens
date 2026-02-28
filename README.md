@@ -20,15 +20,15 @@ A cross-platform desktop Markdown viewer and editor built with Tauri, React, and
 
 ## Keyboard Shortcuts
 
-| Shortcut               | Action            |
-| ---------------------- | ----------------- |
-| `Cmd/Ctrl + O`         | Open file         |
-| `Cmd/Ctrl + S`         | Save file         |
-| `Cmd/Ctrl + ⬆ + S`     | Save As           |
-| `Cmd/Ctrl + R`         | Reload file       |
-| `Cmd/Ctrl + W`         | Close window      |
-| `Cmd/Ctrl + Q`         | Quit application  |
-| `Cmd/Ctrl + F`         | Toggle fullscreen |
+| Shortcut           | Action            |
+| ------------------ | ----------------- |
+| `Cmd/Ctrl + O`     | Open file         |
+| `Cmd/Ctrl + S`     | Save file         |
+| `Cmd/Ctrl + ⬆ + S` | Save As           |
+| `Cmd/Ctrl + R`     | Reload file       |
+| `Cmd/Ctrl + W`     | Close window      |
+| `Cmd/Ctrl + Q`     | Quit application  |
+| `Cmd/Ctrl + F`     | Toggle fullscreen |
 
 ## Tech Stack
 

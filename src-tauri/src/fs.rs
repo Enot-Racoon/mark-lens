@@ -60,7 +60,7 @@ fn get_file_name(path: &str) -> String {
 #[tauri::command]
 pub fn read_file(path: String) -> Result<ReadFileResult, String> {
     let name = get_file_name(&path);
-    
+
     match fs::read_to_string(&path) {
         Ok(content) => Ok(ReadFileResult {
             path,
@@ -106,25 +106,20 @@ pub fn file_exists(path: String) -> Result<bool, String> {
 #[tauri::command]
 pub fn check_access(path: String) -> Result<AccessCheckResult, String> {
     let path_ref = Path::new(&path);
-    
+
     let readable = path_ref.exists();
-    
+
     let writable = if path_ref.exists() {
         // Try to open for append to test write access
-        std::fs::OpenOptions::new()
-            .append(true)
-            .open(&path)
-            .is_ok()
+        std::fs::OpenOptions::new().append(true).open(&path).is_ok()
     } else {
         // If file doesn't exist, check if parent directory is writable
-        path_ref.parent()
-            .map(|p| std::fs::OpenOptions::new()
-                .write(true)
-                .open(p)
-                .is_ok())
+        path_ref
+            .parent()
+            .map(|p| std::fs::OpenOptions::new().write(true).open(p).is_ok())
             .unwrap_or(false)
     };
-    
+
     Ok(AccessCheckResult {
         path,
         readable,
@@ -138,30 +133,27 @@ pub fn list_dir(path: String) -> Result<ListDirResult, String> {
     let entries = match fs::read_dir(&path) {
         Ok(dir_entries) => {
             let mut result = Vec::new();
-            
+
             for entry_result in dir_entries {
                 if let Ok(entry) = entry_result {
                     let entry_path = entry.path();
                     let path_str = entry_path.to_string_lossy().to_string();
-                    let name = entry
-                        .file_name()
-                        .to_string_lossy()
-                        .to_string();
-                    
+                    let name = entry.file_name().to_string_lossy().to_string();
+
                     let is_directory = entry.path().is_dir();
                     let size = if is_directory {
                         None
                     } else {
                         entry.metadata().map(|m| m.len()).ok()
                     };
-                    
+
                     let last_modified = entry
                         .metadata()
                         .and_then(|m| m.modified())
                         .ok()
                         .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
                         .map(|d| d.as_secs());
-                    
+
                     result.push(DirEntry {
                         path: path_str,
                         name,
@@ -171,7 +163,7 @@ pub fn list_dir(path: String) -> Result<ListDirResult, String> {
                     });
                 }
             }
-            
+
             result
         }
         Err(e) => {
@@ -183,7 +175,7 @@ pub fn list_dir(path: String) -> Result<ListDirResult, String> {
             });
         }
     };
-    
+
     Ok(ListDirResult {
         path,
         entries,
@@ -207,7 +199,7 @@ pub struct FileMetadata {
 pub fn get_file_metadata(path: String) -> Result<FileMetadata, String> {
     let path_ref = Path::new(&path);
     let exists = path_ref.exists();
-    
+
     if !exists {
         return Ok(FileMetadata {
             path,
@@ -218,10 +210,10 @@ pub fn get_file_metadata(path: String) -> Result<FileMetadata, String> {
             last_modified: None,
         });
     }
-    
+
     let is_file = path_ref.is_file();
     let is_directory = path_ref.is_dir();
-    
+
     let (size, last_modified) = if is_file {
         let metadata = fs::metadata(&path).map_err(|e| e.to_string())?;
         let size = Some(metadata.len());
@@ -234,7 +226,7 @@ pub fn get_file_metadata(path: String) -> Result<FileMetadata, String> {
     } else {
         (None, None)
     };
-    
+
     Ok(FileMetadata {
         path,
         exists,
@@ -259,7 +251,7 @@ pub fn create_dir(path: String, recursive: bool) -> Result<(), String> {
 #[tauri::command]
 pub fn delete_path(path: String) -> Result<(), String> {
     let path_ref = Path::new(&path);
-    
+
     if path_ref.is_dir() {
         fs::remove_dir_all(&path).map_err(|e| e.to_string())
     } else {
@@ -297,11 +289,11 @@ mod tests {
     fn test_read_file_success() {
         let dir = tempdir().unwrap();
         let file_path = dir.path().join("test.md");
-        
+
         fs::write(&file_path, "# Hello World").unwrap();
-        
+
         let result = read_file(file_path.to_string_lossy().to_string());
-        
+
         assert!(result.is_ok());
         let result = result.unwrap();
         assert!(result.success);
@@ -313,7 +305,7 @@ mod tests {
     #[test]
     fn test_read_file_not_found() {
         let result = read_file("/nonexistent/file.md".to_string());
-        
+
         assert!(result.is_ok());
         let result = result.unwrap();
         assert!(!result.success);
@@ -325,14 +317,17 @@ mod tests {
     fn test_write_file_success() {
         let dir = tempdir().unwrap();
         let file_path = dir.path().join("test.md");
-        
-        let result = write_file(file_path.to_string_lossy().to_string(), "# Test".to_string());
-        
+
+        let result = write_file(
+            file_path.to_string_lossy().to_string(),
+            "# Test".to_string(),
+        );
+
         assert!(result.is_ok());
         let result = result.unwrap();
         assert!(result.success);
         assert!(result.error.is_none());
-        
+
         let content = fs::read_to_string(&file_path).unwrap();
         assert_eq!(content, "# Test");
     }
@@ -341,13 +336,13 @@ mod tests {
     fn test_file_exists() {
         let dir = tempdir().unwrap();
         let file_path = dir.path().join("test.md");
-        
+
         fs::write(&file_path, "content").unwrap();
-        
+
         let result = file_exists(file_path.to_string_lossy().to_string());
         assert!(result.is_ok());
         assert!(result.unwrap());
-        
+
         let result = file_exists("/nonexistent/file.md".to_string());
         assert!(result.is_ok());
         assert!(!result.unwrap());
@@ -357,11 +352,11 @@ mod tests {
     fn test_check_access_readable_and_writable() {
         let dir = tempdir().unwrap();
         let file_path = dir.path().join("test.md");
-        
+
         fs::write(&file_path, "content").unwrap();
-        
+
         let result = check_access(file_path.to_string_lossy().to_string());
-        
+
         assert!(result.is_ok());
         let result = result.unwrap();
         assert!(result.readable);
@@ -373,12 +368,12 @@ mod tests {
         let dir = tempdir().unwrap();
         let file_path = dir.path().join("test.md");
         let subdir_path = dir.path().join("subdir");
-        
+
         fs::write(&file_path, "content").unwrap();
         fs::create_dir(&subdir_path).unwrap();
-        
+
         let result = list_dir(dir.path().to_string_lossy().to_string());
-        
+
         assert!(result.is_ok());
         let result = result.unwrap();
         assert!(result.success);
@@ -389,11 +384,11 @@ mod tests {
     fn test_get_file_metadata_file() {
         let dir = tempdir().unwrap();
         let file_path = dir.path().join("test.md");
-        
+
         fs::write(&file_path, "content").unwrap();
-        
+
         let result = get_file_metadata(file_path.to_string_lossy().to_string());
-        
+
         assert!(result.is_ok());
         let result = result.unwrap();
         assert!(result.exists);
@@ -406,9 +401,9 @@ mod tests {
     fn test_create_dir() {
         let parent_dir = tempdir().unwrap();
         let new_dir_path = parent_dir.path().join("new_dir");
-        
+
         let result = create_dir(new_dir_path.to_string_lossy().to_string(), false);
-        
+
         assert!(result.is_ok());
         assert!(new_dir_path.exists());
     }
@@ -417,11 +412,11 @@ mod tests {
     fn test_delete_path_file() {
         let dir = tempdir().unwrap();
         let file_path = dir.path().join("test.md");
-        
+
         fs::write(&file_path, "content").unwrap();
-        
+
         let result = delete_path(file_path.to_string_lossy().to_string());
-        
+
         assert!(result.is_ok());
         assert!(!file_path.exists());
     }
@@ -431,14 +426,14 @@ mod tests {
         let dir = tempdir().unwrap();
         let old_path = dir.path().join("old.md");
         let new_path = dir.path().join("new.md");
-        
+
         fs::write(&old_path, "content").unwrap();
-        
+
         let result = rename_path(
             old_path.to_string_lossy().to_string(),
             new_path.to_string_lossy().to_string(),
         );
-        
+
         assert!(result.is_ok());
         assert!(!old_path.exists());
         assert!(new_path.exists());
@@ -449,14 +444,14 @@ mod tests {
         let dir = tempdir().unwrap();
         let src_path = dir.path().join("src.md");
         let dst_path = dir.path().join("dst.md");
-        
+
         fs::write(&src_path, "content").unwrap();
-        
+
         let result = copy_file(
             src_path.to_string_lossy().to_string(),
             dst_path.to_string_lossy().to_string(),
         );
-        
+
         assert!(result.is_ok());
         assert!(src_path.exists());
         assert!(dst_path.exists());
