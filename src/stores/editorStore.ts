@@ -106,10 +106,27 @@ export const useEditorStore = create<EditorState & EditorActions>()(
     },
 
     removeFile: (id: string) => {
-      set((state) => ({
-        files: state.files.filter((f: MarkdownFile) => f.id !== id),
-        currentFile: state.currentFile?.id === id ? null : state.currentFile,
-      }));
+      const { currentFile, files } = get();
+      const remainingFiles = files.filter((f: MarkdownFile) => f.id !== id);
+      
+      // Determine new currentFile
+      let newCurrentFile: MarkdownFile | null = null;
+      if (currentFile?.id === id && remainingFiles.length > 0) {
+        // Switch to first remaining file
+        newCurrentFile = remainingFiles[0];
+      } else if (currentFile?.id !== id) {
+        // Current file unchanged
+        newCurrentFile = currentFile;
+      }
+      // else: current file was removed and no files remain -> null
+      
+      set({
+        files: remainingFiles,
+        currentFile: newCurrentFile,
+      });
+      
+      // Update title based on new current file
+      updateWindowTitle(newCurrentFile?.path ?? null, false);
     },
 
     updateFile: (id: string, updates: Partial<MarkdownFile>) => {
