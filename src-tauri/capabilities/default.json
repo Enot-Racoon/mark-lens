@@ -5,10 +5,9 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "core:webview:allow-internal-message",
+    "core:window:allow-internal-toggle-maximize",
     "opener:default",
     "dialog:default",
-    "dialog:allow-open",
     "fs:default",
     "fs:allow-read-text-file",
     "fs:allow-write-text-file",
