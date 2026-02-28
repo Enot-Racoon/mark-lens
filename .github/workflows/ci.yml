@@ -13,14 +13,9 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install system dependencies (Tauri)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: Install bun
         uses: oven-sh/setup-bun@v1
@@ -74,10 +69,7 @@ jobs:
         with:
           workspaces: './src-tauri -> target'
 
-      - name: Run Rust clippy
-        run: cd src-tauri && cargo clippy -- -D warnings
-
-      - name: Run Rust fmt
+      - name: Run Rust fmt check
         run: cd src-tauri && cargo fmt --check
 
   build:

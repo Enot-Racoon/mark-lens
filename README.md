@@ -24,7 +24,7 @@ A cross-platform desktop Markdown viewer and editor built with Tauri, React, and
 | ---------------------- | ----------------- |
 | `Cmd/Ctrl + O`         | Open file         |
 | `Cmd/Ctrl + S`         | Save file         |
-| `Cmd/Ctrl + Shift + S` | Save As           |
+| `Cmd/Ctrl + ⬆ + S`     | Save As           |
 | `Cmd/Ctrl + R`         | Reload file       |
 | `Cmd/Ctrl + W`         | Close window      |
 | `Cmd/Ctrl + Q`         | Quit application  |
