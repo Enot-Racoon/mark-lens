@@ -269,25 +269,22 @@ pub fn run() {
             });
 
             // Handle files opened via command line arguments (first launch)
-            #[cfg(target_os = "macos")]
-            {
-                let app_handle = app.handle().clone();
-                let args: Vec<String> = std::env::args().skip(1).collect();
-                eprintln!("[setup] Command line args: {:?}", args);
-                
-                // Filter only markdown files (ignore cargo/tauri flags in dev mode)
-                args.into_iter()
-                    .filter(|path| {
-                        let ext = std::path::Path::new(path)
-                            .extension()
-                            .and_then(|e| e.to_str())
-                            .unwrap_or("");
-                        matches!(ext, "md" | "markdown" | "mdown" | "mkd" | "mkdn")
-                    })
-                    .for_each(|path| {
-                        open_file(&app_handle, path);
-                    });
-            }
+            let app_handle = app.handle().clone();
+            let args: Vec<String> = std::env::args().skip(1).collect();
+            eprintln!("[setup] Command line args: {:?}", args);
+
+            // Filter only markdown files (ignore cargo/tauri flags in dev mode)
+            args.into_iter()
+                .filter(|path| {
+                    let ext = std::path::Path::new(path)
+                        .extension()
+                        .and_then(|e| e.to_str())
+                        .unwrap_or("");
+                    matches!(ext, "md" | "markdown" | "mdown" | "mkd" | "mkdn")
+                })
+                .for_each(|path| {
+                    open_file(&app_handle, path);
+                });
 
             Ok(())
         })
@@ -300,7 +297,22 @@ pub fn run() {
                 eprintln!("[RunEvent::Opened] Received {} file(s)", urls.len());
                 for url in urls {
                     eprintln!("[RunEvent::Opened] File URL: {}", url);
-                    open_file(app_handle, url.to_string());
+                    // Convert file:// URL to path
+                    let path = url.to_string();
+                    let path = path.strip_prefix("file://").unwrap_or(&path);
+                    open_file(app_handle, path.to_string());
+                }
+            }
+            
+            // Handle Windows/Linux file open events
+            #[cfg(not(target_os = "macos"))]
+            if let tauri::RunEvent::Opened { urls } = event {
+                eprintln!("[RunEvent::Opened] Received {} file(s)", urls.len());
+                for url in urls {
+                    eprintln!("[RunEvent::Opened] File URL: {}", url);
+                    let path = url.to_string();
+                    let path = path.strip_prefix("file://").unwrap_or(&path);
+                    open_file(app_handle, path.to_string());
                 }
             }
         });
