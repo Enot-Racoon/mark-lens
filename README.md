@@ -1,5 +1,8 @@
 # Mark Lens
 
+[![CI](https://github.com/Enot-Racoon/mark-lens/actions/workflows/ci.yml/badge.svg)](https://github.com/Enot-Racoon/mark-lens/actions/workflows/ci.yml)
+[![Release](https://github.com/Enot-Racoon/mark-lens/actions/workflows/release.yml/badge.svg)](https://github.com/Enot-Racoon/mark-lens/releases)
+
 A cross-platform desktop Markdown viewer and editor built with Tauri, React, and TypeScript.
 
 ## Features

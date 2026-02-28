@@ -1,0 +1,2 @@
+# Ignore CI/CD workflow files from linting
+.github/workflows/*.yml
