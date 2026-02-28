@@ -120,7 +120,7 @@ export const Sidebar: React.FC = () => {
                 onClick={() => setShowRecentMenu(!showRecentMenu)}
                 title="Open Recent"
               >
-                ▾
+                <span>◀</span>
               </button>
               {showRecentMenu && (
                 <div className="sidebar-dropdown-menu">

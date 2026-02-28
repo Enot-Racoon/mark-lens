@@ -8,6 +8,7 @@
   position: relative;
   flex-shrink: 0;
   transition: all 0.15s ease;
+  --border-radius: 0.25rem;
 }
 
 .sidebar-collapsed {
@@ -60,14 +61,21 @@
 
 .sidebar-header-actions {
   display: flex;
-  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.sidebar-header-actions > :first-of-type {
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+}
+
+.sidebar-btn-dropdown.sidebar-btn {
+  border-radius: 0 var(--border-radius) var(--border-radius) 0;
 }
 
 .sidebar-btn {
-  padding: 0.25rem 0.75rem;
-  font-size: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
   border: none;
-  border-radius: 4px;
   cursor: pointer;
   background-color: #333;
   color: #d4d4d4;
@@ -89,10 +97,22 @@
 
 .sidebar-btn-dropdown {
   padding: 0.25rem 0.5rem;
-  min-width: 28px;
+  background-color: #0e639c;
+  filter: brightness(0.9);
+}
+
+.sidebar-btn-dropdown:hover {
+  background-color: #0e639c;
+  filter: brightness(1);
+}
+
+.sidebar-btn-dropdown span {
+  display: block;
+  transform: rotate(270deg);
 }
 
 .sidebar-dropdown {
+  display: flex;
   position: relative;
 }
 
@@ -263,14 +283,10 @@
   background-color: rgba(0, 136, 204, 0.3);
 }
 
-.sidebar-header-actions {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.sidebar-btn-toggle {
-  padding: 0.25rem 0.5rem;
-  font-size: 10px;
+.sidebar-btn.sidebar-btn-toggle {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: var(--border-radius);
 }
 
 .file-close-btn:hover {
