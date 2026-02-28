@@ -189,22 +189,6 @@ fn set_window_title(app: AppHandle, title: String) {
     }
 }
 
-/// Handle file dropped from frontend
-#[tauri::command]
-fn handle_file_drop(app: AppHandle, path: String) {
-    eprintln!("[handle_file_drop] File dropped: {}", path);
-    let _ = app.emit("file-open-requested", &path);
-    add_recent_file(
-        app.clone(),
-        path.clone(),
-        std::path::Path::new(&path)
-            .file_name()
-            .unwrap_or_default()
-            .to_string_lossy()
-            .to_string(),
-    );
-}
-
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -220,7 +204,6 @@ pub fn run() {
             get_startup_files,
             clear_startup_files,
             set_window_title,
-            handle_file_drop,
             fs::read_file,
             fs::write_file,
             fs::file_exists,

@@ -1,40 +1,48 @@
 import { useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { useEditorStore } from "../stores";
 
 export function useDragAndDrop() {
+  const openFileByPath = useEditorStore((state) => state.openFileByPath);
+
   useEffect(() => {
+    console.log("[drag-drop] Setting up native file drop listener");
+
+    // Use Tauri's native file-drop event which provides full file paths
+    import("@tauri-apps/api/event").then(({ listen }) => {
+      const unlisten = listen<string[]>("file-drop", (event) => {
+        console.log("[file-drop] Native event received:", event.payload);
+        
+        event.payload.forEach((path) => {
+          const isMarkdown = /\.(md|markdown|mdown|mkd|mkdn)$/i.test(path);
+          if (isMarkdown) {
+            console.log("[file-drop] Opening markdown file:", path);
+            openFileByPath(path);
+          }
+        });
+      }).catch((err) => {
+        console.error("[file-drop] Failed to set up listener:", err);
+      });
+
+      return () => {
+        unlisten.then((fn) => {
+          if (typeof fn === 'function') {
+            fn();
+          }
+        }).catch(console.error);
+      };
+    });
+
+    // Prevent default browser behavior
     const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
-      e.stopPropagation();
       if (e.dataTransfer) {
         e.dataTransfer.dropEffect = "copy";
       }
     };
 
-    const handleDrop = async (e: DragEvent) => {
+    const handleDrop = (e: DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
-
-      console.log("[drag-drop] Drop event");
-
-      // Get files from dataTransfer
-      const files = e.dataTransfer?.files;
-      if (files && files.length > 0) {
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          const isMarkdown = /\.(md|markdown|mdown|mkd|mkdn)$/i.test(file.name);
-
-          if (isMarkdown) {
-            console.log("[drag-drop] File dropped:", file.name);
-            // Invoke Rust to handle file drop through unified flow
-            // This ensures consistent behavior with CLI, file associations, etc.
-            invoke("handle_file_drop", { path: file.name })
-              .catch((err) => {
-                console.error("[drag-drop] Failed to handle file drop:", err);
-              });
-          }
-        }
-      }
     };
 
     document.body.addEventListener("dragover", handleDragOver);
@@ -44,5 +52,5 @@ export function useDragAndDrop() {
       document.body.removeEventListener("dragover", handleDragOver);
       document.body.removeEventListener("drop", handleDrop);
     };
-  }, []);
+  }, [openFileByPath]);
 }
