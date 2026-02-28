@@ -111,14 +111,13 @@ export const useEditorStore = create<EditorState & EditorActions>()(
       
       // Determine new currentFile
       let newCurrentFile: MarkdownFile | null = null;
-      if (currentFile?.id === id && remainingFiles.length > 0) {
-        // Switch to first remaining file
-        newCurrentFile = remainingFiles[0];
-      } else if (currentFile?.id !== id) {
+      if (currentFile?.id === id) {
+        // Current file is being removed
+        newCurrentFile = remainingFiles.length > 0 ? remainingFiles[0] : null;
+      } else {
         // Current file unchanged
         newCurrentFile = currentFile;
       }
-      // else: current file was removed and no files remain -> null
       
       set({
         files: remainingFiles,
