@@ -107,9 +107,8 @@ pub fn build_menu(app: &AppHandle) -> Result<Menu<tauri::Wry>, tauri::Error> {
     let quit_mi = MenuItem::with_id(app, "quit", "Quit", true, Some("CmdOrCtrl+Q"))?;
 
     let open_mi = MenuItem::with_id(app, "open", "Open…", true, Some("CmdOrCtrl+O"))?;
-    let open_recent_mi = MenuItem::with_id(app, "open_recent", "Open Recent", true, None::<&str>)?;
-    let clear_recent_mi =
-        MenuItem::with_id(app, "clear_recent", "Clear Menu", true, None::<&str>)?;
+    // let open_recent_mi = MenuItem::with_id(app, "open_recent", "Open Recent", true, None::<&str>)?;
+    // let clear_recent_mi = MenuItem::with_id(app, "clear_recent", "Clear Menu", true, None::<&str>)?;
     let close_window_mi =
         MenuItem::with_id(app, "close_window", "Close Window", true, Some("CmdOrCtrl+W"))?;
 
@@ -128,8 +127,8 @@ pub fn build_menu(app: &AppHandle) -> Result<Menu<tauri::Wry>, tauri::Error> {
         true,
         &[
             &open_mi,
-            &open_recent_mi,
-            &clear_recent_mi,
+            // &open_recent_mi,
+            // &clear_recent_mi,
             &close_window_mi,
         ],
     )?;

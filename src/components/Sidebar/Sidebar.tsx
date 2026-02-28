@@ -23,10 +23,10 @@ export const Sidebar: React.FC = () => {
   }, [openFile]);
 
   const handleSelectFile = useCallback(
-    (file: typeof files[0]) => {
+    (file: (typeof files)[0]) => {
       setCurrentFile(file);
     },
-    [setCurrentFile]
+    [setCurrentFile],
   );
 
   const handleCloseFile = useCallback(
@@ -34,16 +34,13 @@ export const Sidebar: React.FC = () => {
       e.stopPropagation();
       removeFile(id);
     },
-    [removeFile]
+    [removeFile],
   );
 
-  const handleOpenRecent = useCallback(
-    async (path: string) => {
-      await useEditorStore.getState().openFileByPath(path);
-      setShowRecentMenu(false);
-    },
-    []
-  );
+  const handleOpenRecent = useCallback(async (path: string) => {
+    await useEditorStore.getState().openFileByPath(path);
+    setShowRecentMenu(false);
+  }, []);
 
   const handleClearRecent = useCallback(async () => {
     await clearRecentFiles();
@@ -60,7 +57,7 @@ export const Sidebar: React.FC = () => {
       const newWidth = e.clientX;
       setSidebarWidth(newWidth);
     },
-    [isResizing, setSidebarWidth]
+    [isResizing, setSidebarWidth],
   );
 
   const handleResizeEnd = useCallback(() => {
@@ -102,16 +99,19 @@ export const Sidebar: React.FC = () => {
     <>
       <aside className="sidebar" style={{ width: sidebarWidth }}>
         <div className="sidebar-header">
+          <button
+            className="sidebar-btn sidebar-btn-toggle"
+            onClick={toggleSidebar}
+            title="Collapse sidebar"
+          >
+            ◀
+          </button>
           <h2 className="sidebar-title">Files</h2>
           <div className="sidebar-header-actions">
             <button
-              className="sidebar-btn sidebar-btn-toggle"
-              onClick={toggleSidebar}
-              title="Collapse sidebar"
+              className="sidebar-btn sidebar-btn-primary"
+              onClick={handleOpenFile}
             >
-              ◀
-            </button>
-            <button className="sidebar-btn sidebar-btn-primary" onClick={handleOpenFile}>
               Open
             </button>
             <div className="sidebar-dropdown">
@@ -125,7 +125,9 @@ export const Sidebar: React.FC = () => {
               {showRecentMenu && (
                 <div className="sidebar-dropdown-menu">
                   {recentFiles.length === 0 ? (
-                    <div className="sidebar-dropdown-empty">No recent files</div>
+                    <div className="sidebar-dropdown-empty">
+                      No recent files
+                    </div>
                   ) : (
                     <>
                       <ul className="recent-files-list">
@@ -158,7 +160,9 @@ export const Sidebar: React.FC = () => {
           {files.length === 0 ? (
             <div className="sidebar-empty">
               <p>No files open</p>
-              <p className="sidebar-hint">Open a markdown file to start editing</p>
+              <p className="sidebar-hint">
+                Open a markdown file to start editing
+              </p>
             </div>
           ) : (
             <ul className="file-list">
