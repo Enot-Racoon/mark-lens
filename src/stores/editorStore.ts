@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { open } from "@tauri-apps/plugin-dialog";
 import type { MarkdownFile } from "../types";
 import { generateId } from "../lib/markdown";
@@ -46,8 +47,9 @@ const initialState: EditorState = {
 };
 
 export const useEditorStore = create<EditorState & EditorActions>()(
-  (set, get) => ({
-    ...initialState,
+  persist(
+    (set, get) => ({
+      ...initialState,
 
     setCurrentFile: (file: MarkdownFile | null) => {
       set({ currentFile: file, isModified: false });
@@ -300,4 +302,11 @@ export const useEditorStore = create<EditorState & EditorActions>()(
       });
     },
   }),
-);
+  {
+    name: "editor-storage",
+    storage: createJSONStorage(() => localStorage),
+    partialize: (state) => ({
+      viewMode: state.viewMode,
+    }),
+  },
+));
