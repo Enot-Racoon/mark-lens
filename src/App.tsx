@@ -16,9 +16,9 @@ function App() {
   useDragAndDrop();
 
   return (
-    <div className="app">
+    <div className="app" data-tauri-drag-region>
       <Toolbar />
-      <div className="app-body">
+      <div className="app-body" data-tauri-drag-region>
         <Sidebar />
         <MarkdownEditor />
       </div>

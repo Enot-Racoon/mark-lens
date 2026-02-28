@@ -3,13 +3,12 @@ import { useEditorStore } from "../stores";
 
 export function useDragAndDrop() {
   const openFileByPath = useEditorStore((state) => state.openFileByPath);
+  const addFile = useEditorStore((state) => state.addFile);
 
   useEffect(() => {
-    console.log("[drag-drop] Setting up drag-drop handlers");
-
-    // Prevent default browser behavior for drag-drop
     const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
+      e.stopPropagation();
       if (e.dataTransfer) {
         e.dataTransfer.dropEffect = "copy";
       }
@@ -17,25 +16,52 @@ export function useDragAndDrop() {
 
     const handleDrop = async (e: DragEvent) => {
       e.preventDefault();
-      console.log("[drag-drop] Drop event captured");
-      
-      // Try to get file paths from dataTransfer
+      e.stopPropagation();
+
+      // Try webkitGetAsEntry API first (works in Tauri)
+      const items = e.dataTransfer?.items;
+      if (items && items.length > 0) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.kind === "file") {
+            const entry = (item as any).webkitGetAsEntry?.();
+            if (entry) {
+              const isMarkdown = /\.(md|markdown|mdown|mkd|mkdn)$/i.test(entry.name);
+              if (isMarkdown) {
+                // Get file from files array
+                const file = e.dataTransfer?.files[i];
+                if (file) {
+                  try {
+                    const content = await file.text();
+                    const newFile = {
+                      id: crypto.randomUUID(),
+                      path: entry.name,
+                      name: entry.name,
+                      content,
+                      lastModified: file.lastModified,
+                    };
+                    addFile(newFile);
+                  } catch (error) {
+                    console.error("Failed to read dropped file:", error);
+                  }
+                }
+              }
+            }
+          }
+        }
+        return;
+      }
+
+      // Fallback to files array
       const files = e.dataTransfer?.files;
-      console.log("[drag-drop] Files count:", files?.length);
-      
       if (files && files.length > 0) {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
-          console.log("[drag-drop] File:", file.name, file.type);
-          
           const isMarkdown = /\.(md|markdown|mdown|mkd|mkdn)$/i.test(file.name);
+
           if (isMarkdown) {
             try {
-              // Read file content directly
               const content = await file.text();
-              console.log("[drag-drop] Read file content, length:", content.length);
-              
-              // Create file object and add it
               const newFile = {
                 id: crypto.randomUUID(),
                 path: file.name,
@@ -43,26 +69,21 @@ export function useDragAndDrop() {
                 content,
                 lastModified: file.lastModified,
               };
-              
-              openFileByPath(file.name).catch(() => {
-                // If openFileByPath fails, just add the file with content
-                const addFile = useEditorStore.getState().addFile;
-                addFile(newFile as any);
-              });
+              addFile(newFile);
             } catch (error) {
-              console.error("[drag-drop] Failed to read file:", error);
+              console.error("Failed to read dropped file:", error);
             }
           }
         }
       }
     };
 
-    document.addEventListener("dragover", handleDragOver);
-    document.addEventListener("drop", handleDrop);
+    document.body.addEventListener("dragover", handleDragOver);
+    document.body.addEventListener("drop", handleDrop);
 
     return () => {
-      document.removeEventListener("dragover", handleDragOver);
-      document.removeEventListener("drop", handleDrop);
+      document.body.removeEventListener("dragover", handleDragOver);
+      document.body.removeEventListener("drop", handleDrop);
     };
-  }, [openFileByPath]);
+  }, [openFileByPath, addFile]);
 }

@@ -33,6 +33,13 @@ body,
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
+  user-select: none;
+}
+
+.app,
+.app-body,
+.app * {
+  -webkit-app-region: no-drag;
 }
 
 .app-body {
