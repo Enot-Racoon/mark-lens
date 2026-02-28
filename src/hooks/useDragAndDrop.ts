@@ -1,10 +1,7 @@
 import { useEffect } from "react";
-import { useEditorStore } from "../stores";
+import { invoke } from "@tauri-apps/api/core";
 
 export function useDragAndDrop() {
-  const openFileByPath = useEditorStore((state) => state.openFileByPath);
-  const addFile = useEditorStore((state) => state.addFile);
-
   useEffect(() => {
     const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
@@ -20,68 +17,21 @@ export function useDragAndDrop() {
 
       console.log("[drag-drop] Drop event");
 
-      // Try webkitGetAsEntry API first (works in Tauri)
-      const items = e.dataTransfer?.items;
-      if (items && items.length > 0) {
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i];
-          if (item.kind === "file") {
-            const entry = (item as any).webkitGetAsEntry?.();
-            if (entry) {
-              const isMarkdown = /\.(md|markdown|mdown|mkd|mkdn)$/i.test(
-                entry.name,
-              );
-              if (isMarkdown) {
-                // Get file from files array
-                const file = e.dataTransfer?.files[i];
-                if (file) {
-                  try {
-                    const content = await file.text();
-                    // fullPath from entry is relative, use file.name as fallback
-                    // On macOS with Tauri, we can't get absolute path from drop
-                    const path = file.name;
-                    console.log("[drag-drop] Adding file:", path);
-                    const newFile = {
-                      id: crypto.randomUUID(),
-                      path: path,
-                      name: entry.name,
-                      content,
-                      lastModified: file.lastModified,
-                    };
-                    addFile(newFile);
-                  } catch (error) {
-                    console.error("Failed to read dropped file:", error);
-                  }
-                }
-              }
-            }
-          }
-        }
-        return;
-      }
-
-      // Fallback to files array
+      // Get files from dataTransfer
       const files = e.dataTransfer?.files;
       if (files && files.length > 0) {
-        console.log("[drag-drop] Using files array:", files.length);
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
           const isMarkdown = /\.(md|markdown|mdown|mkd|mkdn)$/i.test(file.name);
 
           if (isMarkdown) {
-            try {
-              const content = await file.text();
-              const newFile = {
-                id: crypto.randomUUID(),
-                path: file.name,
-                name: file.name,
-                content,
-                lastModified: file.lastModified,
-              };
-              addFile(newFile);
-            } catch (error) {
-              console.error("Failed to read dropped file:", error);
-            }
+            console.log("[drag-drop] File dropped:", file.name);
+            // Invoke Rust to handle file drop through unified flow
+            // This ensures consistent behavior with CLI, file associations, etc.
+            invoke("handle_file_drop", { path: file.name })
+              .catch((err) => {
+                console.error("[drag-drop] Failed to handle file drop:", err);
+              });
           }
         }
       }
@@ -94,5 +44,5 @@ export function useDragAndDrop() {
       document.body.removeEventListener("dragover", handleDragOver);
       document.body.removeEventListener("drop", handleDrop);
     };
-  }, [openFileByPath, addFile]);
+  }, []);
 }
