@@ -19,6 +19,7 @@ import {
 
 /**
  * Update window title with file path and modified status
+ * Called from setCurrentFile - the single source of truth for UI updates
  */
 function updateWindowTitle(path: string | null, isModified: boolean) {
   if (!path) {
@@ -58,6 +59,8 @@ interface EditorActions {
   setSidebarWidth: (width: number) => void;
   toggleSidebar: () => void;
   setSplitRatio: (ratio: number) => void;
+  /** Internal: trigger UI update (title bar) */
+  _updateUI: () => void;
 }
 
 const initialState: EditorState = {
@@ -75,9 +78,21 @@ export const useEditorStore = create<EditorState & EditorActions>()(
     (set, get) => ({
       ...initialState,
 
+    /**
+     * SINGLE SOURCE OF TRUTH for UI updates (title bar, etc.)
+     * Always use this when currentFile or isModified changes
+     */
     setCurrentFile: (file: MarkdownFile | null) => {
       set({ currentFile: file, isModified: false });
       updateWindowTitle(file?.path ?? null, false);
+    },
+
+    /**
+     * Internal helper to refresh UI without changing state
+     */
+    _updateUI: () => {
+      const { currentFile, isModified } = get();
+      updateWindowTitle(currentFile?.path ?? null, isModified);
     },
 
     setContent: (content: string) => {
@@ -92,8 +107,8 @@ export const useEditorStore = create<EditorState & EditorActions>()(
           f.id === currentFile.id ? { ...f, content } : f,
         );
         set({ files });
-        // Update window title with modified indicator
-        updateWindowTitle(currentFile.path, true);
+        // Trigger UI update through single source of truth
+        get()._updateUI();
       }
     },
 
@@ -108,7 +123,7 @@ export const useEditorStore = create<EditorState & EditorActions>()(
     removeFile: (id: string) => {
       const { currentFile, files } = get();
       const remainingFiles = files.filter((f: MarkdownFile) => f.id !== id);
-      
+
       // Determine new currentFile
       let newCurrentFile: MarkdownFile | null = null;
       if (currentFile?.id === id) {
@@ -118,14 +133,14 @@ export const useEditorStore = create<EditorState & EditorActions>()(
         // Current file unchanged
         newCurrentFile = currentFile;
       }
-      
+
       set({
         files: remainingFiles,
         currentFile: newCurrentFile,
       });
-      
-      // Update title based on new current file
-      updateWindowTitle(newCurrentFile?.path ?? null, false);
+
+      // Trigger UI update through single source of truth
+      get()._updateUI();
     },
 
     updateFile: (id: string, updates: Partial<MarkdownFile>) => {
@@ -200,7 +215,8 @@ export const useEditorStore = create<EditorState & EditorActions>()(
         }));
       }
 
-      updateWindowTitle(path, false);
+      // Trigger UI update through single source of truth
+      get()._updateUI();
 
       // Add to recent files
       useRecentFilesStore.getState().addRecentFile(path, file.name);
@@ -230,7 +246,8 @@ export const useEditorStore = create<EditorState & EditorActions>()(
       }
 
       set({ isModified: false });
-      updateWindowTitle(currentFile.path, false);
+      // Trigger UI update through single source of truth
+      get()._updateUI();
       return true;
     },
 
@@ -278,7 +295,8 @@ export const useEditorStore = create<EditorState & EditorActions>()(
             isModified: false,
           });
 
-          updateWindowTitle(path, false);
+          // Trigger UI update through single source of truth
+          get()._updateUI();
 
           useRecentFilesStore.getState().addRecentFile(path, name);
 
@@ -315,7 +333,8 @@ export const useEditorStore = create<EditorState & EditorActions>()(
         isModified: false,
       });
 
-      updateWindowTitle(currentFile.path, false);
+      // Trigger UI update through single source of truth
+      get()._updateUI();
     },
 
     setViewMode: (mode: "edit" | "preview" | "split") => {

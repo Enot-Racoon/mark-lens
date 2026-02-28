@@ -28,7 +28,9 @@ export function useDragAndDrop() {
           if (item.kind === "file") {
             const entry = (item as any).webkitGetAsEntry?.();
             if (entry) {
-              const isMarkdown = /\.(md|markdown|mdown|mkd|mkdn)$/i.test(entry.name);
+              const isMarkdown = /\.(md|markdown|mdown|mkd|mkdn)$/i.test(
+                entry.name,
+              );
               if (isMarkdown) {
                 // Get file from files array
                 const file = e.dataTransfer?.files[i];
@@ -37,7 +39,7 @@ export function useDragAndDrop() {
                     const content = await file.text();
                     // fullPath from entry is relative, use file.name as fallback
                     // On macOS with Tauri, we can't get absolute path from drop
-                    const path = file.name;
+                    const path = file.webkitRelativePath;
                     console.log("[drag-drop] Adding file:", path);
                     const newFile = {
                       id: crypto.randomUUID(),
