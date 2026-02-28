@@ -3,11 +3,25 @@ mod fs;
 use serde::{Deserialize, Serialize};
 use tauri::{
     menu::{Menu, MenuItem, Submenu},
-    AppHandle, Emitter, Manager,
+    AppHandle, Emitter, Manager, State,
 };
 use tauri_plugin_dialog::DialogExt;
+use std::sync::Mutex;
 
 const MAX_RECENT_FILES: usize = 10;
+
+/// State for files opened at startup
+pub struct StartupFiles {
+    pub paths: Mutex<Vec<String>>,
+}
+
+impl Default for StartupFiles {
+    fn default() -> Self {
+        Self {
+            paths: Mutex::new(Vec::new()),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct RecentFile {
@@ -156,6 +170,18 @@ pub fn build_menu(app: &AppHandle) -> Result<Menu<tauri::Wry>, tauri::Error> {
     }
 }
 
+/// Get files passed at startup
+#[tauri::command]
+fn get_startup_files(state: State<StartupFiles>) -> Vec<String> {
+    state.paths.lock().unwrap().clone()
+}
+
+#[tauri::command]
+fn clear_startup_files(state: State<StartupFiles>) {
+    let mut paths = state.paths.lock().unwrap();
+    paths.clear();
+}
+
 fn open_file(app: &AppHandle, path: String) {
     eprintln!("[open_file] Opening file: {}", path);
     eprintln!("[open_file] Emitting file-open-requested event");
@@ -180,11 +206,14 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .manage(tokio::sync::Mutex::new(RecentFilesState::default()))
+        .manage(StartupFiles::default())
         .invoke_handler(tauri::generate_handler![
             get_recent_files,
             add_recent_file,
             clear_recent_files,
             open_in_default_editor,
+            get_startup_files,
+            clear_startup_files,
             fs::read_file,
             fs::write_file,
             fs::file_exists,
@@ -273,12 +302,14 @@ pub fn run() {
             });
 
             // Handle files opened via command line arguments (first launch)
-            let app_handle = app.handle().clone();
             let args: Vec<String> = std::env::args().skip(1).collect();
             eprintln!("[setup] Command line args: {:?}", args);
 
+            // Store startup files in state
+            let startup_files = app.state::<StartupFiles>();
+            
             // Filter only markdown files (ignore cargo/tauri flags in dev mode)
-            args.into_iter()
+            for path in args.into_iter()
                 .filter(|path| {
                     let ext = std::path::Path::new(path)
                         .extension()
@@ -286,9 +317,10 @@ pub fn run() {
                         .unwrap_or("");
                     matches!(ext, "md" | "markdown" | "mdown" | "mkd" | "mkdn")
                 })
-                .for_each(|path| {
-                    open_file(&app_handle, path);
-                });
+            {
+                eprintln!("[setup] Storing startup file: {}", path);
+                startup_files.paths.lock().unwrap().push(path.clone());
+            }
 
             Ok(())
         })
@@ -299,12 +331,14 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             if let tauri::RunEvent::Opened { urls } = event {
                 eprintln!("[RunEvent::Opened] Received {} file(s)", urls.len());
+                
+                let startup_files = app_handle.state::<StartupFiles>();
                 for url in urls {
                     eprintln!("[RunEvent::Opened] File URL: {}", url);
                     // Convert file:// URL to path
                     let path = url.to_string();
                     let path = path.strip_prefix("file://").unwrap_or(&path);
-                    open_file(app_handle, path.to_string());
+                    startup_files.paths.lock().unwrap().push(path.to_string());
                 }
             }
             
@@ -312,11 +346,13 @@ pub fn run() {
             #[cfg(not(target_os = "macos"))]
             if let tauri::RunEvent::Opened { urls } = event {
                 eprintln!("[RunEvent::Opened] Received {} file(s)", urls.len());
+                
+                let startup_files = app_handle.state::<StartupFiles>();
                 for url in urls {
                     eprintln!("[RunEvent::Opened] File URL: {}", url);
                     let path = url.to_string();
                     let path = path.strip_prefix("file://").unwrap_or(&path);
-                    open_file(app_handle, path.to_string());
+                    startup_files.paths.lock().unwrap().push(path.to_string());
                 }
             }
         });

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Toolbar, Sidebar, MarkdownEditor } from "./components";
 import { useEditorStore, useRecentFilesStore } from "./stores";
 import { useDragAndDrop } from "./hooks";
+import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
 function App() {
@@ -13,16 +14,20 @@ function App() {
     setupFileWatcher();
     loadRecentFiles();
 
-    // Check for pending files from global listener
-    const pendingFiles = sessionStorage.getItem("pending-files");
-    if (pendingFiles) {
-      const files = JSON.parse(pendingFiles);
-      console.log("[App] Processing pending files:", files);
-      files.forEach((path: string) => {
-        openFileByPath(path);
+    // Get files passed at startup via file association or CLI args
+    invoke<string[]>("get_startup_files")
+      .then((paths) => {
+        console.log("[App] Startup files:", paths);
+        paths.forEach((path) => {
+          console.log("[App] Opening startup file:", path);
+          openFileByPath(path);
+        });
+        // Clear the startup files so they're not opened again
+        invoke("clear_startup_files").catch(console.error);
+      })
+      .catch((err) => {
+        console.error("[App] Failed to get startup files:", err);
       });
-      sessionStorage.removeItem("pending-files");
-    }
   }, [setupFileWatcher, loadRecentFiles, openFileByPath]);
 
   useDragAndDrop();
