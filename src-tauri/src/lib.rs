@@ -182,24 +182,6 @@ fn clear_startup_files(state: State<StartupFiles>) {
     paths.clear();
 }
 
-fn open_file(app: &AppHandle, path: String) {
-    eprintln!("[open_file] Opening file: {}", path);
-    eprintln!("[open_file] Emitting file-open-requested event");
-    
-    let result = app.emit("file-open-requested", &path);
-    eprintln!("[open_file] Event emit result: {:?}", result);
-    
-    add_recent_file(
-        app.clone(),
-        path.clone(),
-        std::path::Path::new(&path)
-            .file_name()
-            .unwrap_or_default()
-            .to_string_lossy()
-            .to_string(),
-    );
-}
-
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
