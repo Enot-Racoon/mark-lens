@@ -39,7 +39,7 @@ export function useDragAndDrop() {
                     const content = await file.text();
                     // fullPath from entry is relative, use file.name as fallback
                     // On macOS with Tauri, we can't get absolute path from drop
-                    const path = file.webkitRelativePath;
+                    const path = file.name;
                     console.log("[drag-drop] Adding file:", path);
                     const newFile = {
                       id: crypto.randomUUID(),
