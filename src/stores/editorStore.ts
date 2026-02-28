@@ -21,7 +21,10 @@ import {
  * Update window title with file path and modified status
  * Called from setCurrentFile - the single source of truth for UI updates
  */
-function updateWindowTitle(path: string | null, isModified: boolean) {
+function updateWindowTitle(
+  path: string | null | undefined,
+  isModified: boolean,
+) {
   if (!path) {
     invoke("set_window_title", { title: "Mark Lens" }).catch(console.error);
   } else {
@@ -84,20 +87,20 @@ export const useEditorStore = create<EditorState & EditorActions>()(
        */
       setCurrentFile: (file: MarkdownFile | null) => {
         set({ currentFile: file, isModified: false });
-        updateWindowTitle(file?.path ?? null, false);
+        get()._updateUI();
       },
 
       /**
        * Internal helper to refresh UI without changing state
        */
       _updateUI: () => {
-        const cn = get().currentFile?.name;
-        const hasNamesake =
-          get().files.filter((f: MarkdownFile) => f.name === cn).length > 1;
+        const { currentFile, isModified, files } = get();
+        const cn = currentFile?.name;
 
-        const { currentFile, isModified } = get();
-        const title = hasNamesake ? currentFile?.path : cn;
-        updateWindowTitle(title ?? null, isModified);
+        const namesakes = files.filter((f: MarkdownFile) => f.name === cn);
+        const hasNamesake = namesakes.length > 1;
+
+        updateWindowTitle(hasNamesake ? currentFile?.path : cn, isModified);
       },
 
       setContent: (content: string) => {
