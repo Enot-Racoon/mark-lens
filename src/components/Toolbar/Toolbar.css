@@ -33,10 +33,30 @@
 .toolbar-file {
   color: #888;
   font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+.toolbar-file-name {
+  color: #d4d4d4;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.toolbar-file-path {
+  color: #666;
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .toolbar-modified {
   color: #e8b339;
+  font-weight: bold;
 }
 
 .toolbar-toggle-group {

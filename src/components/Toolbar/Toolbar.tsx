@@ -85,9 +85,10 @@ export const Toolbar: React.FC = () => {
       <div className="toolbar-section">
         <span className="toolbar-title">Mark Lens</span>
         {currentFile && (
-          <span className="toolbar-file">
-            {currentFile.name}
+          <span className="toolbar-file" title={currentFile.path}>
+            <span className="toolbar-file-name">{currentFile.name}</span>
             {isModified && <span className="toolbar-modified">*</span>}
+            <span className="toolbar-file-path">{currentFile.path}</span>
           </span>
         )}
       </div>
