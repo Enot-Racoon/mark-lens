@@ -7,13 +7,6 @@ use tauri::{
 };
 use tauri_plugin_dialog::DialogExt;
 
-#[cfg(target_os = "macos")]
-use {
-    objc2::rc::Retained,
-    objc2_app_kit::{NSDraggingInfo, NSPasteboard, NSPasteboardTypeFileURL},
-    objc2_foundation::{NSArray, NSURL},
-};
-
 const MAX_RECENT_FILES: usize = 10;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
