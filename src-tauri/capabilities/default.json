@@ -6,6 +6,7 @@
   "permissions": [
     "core:default",
     "core:window:allow-internal-toggle-maximize",
+    "core:window:allow-set-focus",
     "opener:default",
     "dialog:default",
     "fs:default",
@@ -13,6 +14,10 @@
     "fs:allow-write-text-file",
     "fs:allow-exists",
     "fs:allow-read-dir",
+    "fs:allow-app-read-recursive",
+    "fs:allow-app-write-recursive",
+    "fs:allow-download-read",
+    "fs:allow-home-read",
     "shell:default"
   ]
 }

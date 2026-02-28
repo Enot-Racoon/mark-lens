@@ -261,6 +261,22 @@ pub fn run() {
                 }
             });
 
+            // Handle files opened via Finder (double-click or "Open With")
+            // This processes command line arguments passed when app is launched with a file
+            #[cfg(target_os = "macos")]
+            {
+                let app_handle = app.handle().clone();
+                std::env::args().skip(1).for_each(|path| {
+                    let _ = app_handle.emit("file-open-requested", &path);
+                    add_recent_file(app_handle.clone(), path.clone(), 
+                        std::path::Path::new(&path)
+                            .file_name()
+                            .unwrap_or_default()
+                            .to_string_lossy()
+                            .to_string());
+                });
+            }
+
             Ok(())
         });
 

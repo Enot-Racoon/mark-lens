@@ -42,7 +42,35 @@
     "longDescription": "Mark Lens is a beautiful, cross-platform desktop application for viewing and editing Markdown files with live preview.",
     "fileAssociations": [
       {
-        "ext": ["md", "markdown", "mdown", "mkd", "mkdn"],
+        "ext": ["md"],
+        "name": "Markdown",
+        "description": "Markdown file",
+        "mimeType": "text/markdown",
+        "role": "Editor"
+      },
+      {
+        "ext": ["markdown"],
+        "name": "Markdown",
+        "description": "Markdown file",
+        "mimeType": "text/markdown",
+        "role": "Editor"
+      },
+      {
+        "ext": ["mdown"],
+        "name": "Markdown",
+        "description": "Markdown file",
+        "mimeType": "text/markdown",
+        "role": "Editor"
+      },
+      {
+        "ext": ["mkd"],
+        "name": "Markdown",
+        "description": "Markdown file",
+        "mimeType": "text/markdown",
+        "role": "Editor"
+      },
+      {
+        "ext": ["mkdn"],
         "name": "Markdown",
         "description": "Markdown file",
         "mimeType": "text/markdown",

@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { useEditorStore } from "../stores";
+import { generateId } from "../lib/markdown";
 
 export function useDragAndDrop() {
   const openFileByPath = useEditorStore((state) => state.openFileByPath);
+  const addFile = useEditorStore((state) => state.addFile);
 
   useEffect(() => {
     const handleDragOver = (e: DragEvent) => {
@@ -19,12 +21,26 @@ export function useDragAndDrop() {
         const isMarkdown = /\.(md|markdown|mdown|mkd|mkdn)$/i.test(file.name);
 
         if (isMarkdown) {
-          // For security reasons, we can't directly read the file path
-          // Instead, we show a message to use the Open dialog
-          // In production, you'd use Tauri's file path API
-          const path = (file as any).path;
-          if (path) {
-            await openFileByPath(path);
+          try {
+            // Use Tauri FS API to read the file
+            // We need to get the file path from the OS
+            const path = (file as any).path;
+            if (path) {
+              await openFileByPath(path);
+            } else {
+              // Fallback: read file content directly
+              const content = await file.text();
+              const newFile = {
+                id: generateId(),
+                path: file.name,
+                name: file.name,
+                content,
+                lastModified: file.lastModified,
+              };
+              addFile(newFile);
+            }
+          } catch (error) {
+            console.error("Failed to open dropped file:", error);
           }
         }
       }
@@ -37,5 +53,5 @@ export function useDragAndDrop() {
       window.removeEventListener("dragover", handleDragOver);
       window.removeEventListener("drop", handleDrop);
     };
-  }, [openFileByPath]);
+  }, [openFileByPath, addFile]);
 }
