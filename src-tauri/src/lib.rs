@@ -172,10 +172,22 @@ pub fn build_menu(app: &AppHandle) -> Result<Menu<tauri::Wry>, tauri::Error> {
     }
 }
 
-pub fn run() {
-    let mut builder = tauri::Builder::default();
+fn open_file(app: &AppHandle, path: String) {
+    eprintln!("[open_file] Opening file: {}", path);
+    let _ = app.emit("file-open-requested", &path);
+    add_recent_file(
+        app.clone(),
+        path.clone(),
+        std::path::Path::new(&path)
+            .file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .to_string(),
+    );
+}
 
-    builder = builder
+pub fn run() {
+    tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
@@ -190,10 +202,14 @@ pub fn run() {
             open_in_default_editor
         ])
         .setup(|app| {
+            eprintln!("[setup] Application starting up...");
+            
             // Load recent files from disk
             let recent_files = load_recent_files(&app.handle());
             *app.state::<tokio::sync::Mutex<RecentFilesState>>()
-                .blocking_lock() = recent_files;
+                .blocking_lock() = recent_files.clone();
+            
+            eprintln!("[setup] Loaded {} recent files", recent_files.files.len());
 
             // Set up menu
             let menu = build_menu(&app.handle())?;
@@ -261,26 +277,40 @@ pub fn run() {
                 }
             });
 
-            // Handle files opened via Finder (double-click or "Open With")
-            // This processes command line arguments passed when app is launched with a file
+            // Handle files opened via command line arguments (first launch)
             #[cfg(target_os = "macos")]
             {
                 let app_handle = app.handle().clone();
-                std::env::args().skip(1).for_each(|path| {
-                    let _ = app_handle.emit("file-open-requested", &path);
-                    add_recent_file(app_handle.clone(), path.clone(), 
-                        std::path::Path::new(&path)
-                            .file_name()
-                            .unwrap_or_default()
-                            .to_string_lossy()
-                            .to_string());
-                });
+                let args: Vec<String> = std::env::args().skip(1).collect();
+                eprintln!("[setup] Command line args: {:?}", args);
+                
+                // Filter only markdown files (ignore cargo/tauri flags in dev mode)
+                args.into_iter()
+                    .filter(|path| {
+                        let ext = std::path::Path::new(path)
+                            .extension()
+                            .and_then(|e| e.to_str())
+                            .unwrap_or("");
+                        matches!(ext, "md" | "markdown" | "mdown" | "mkd" | "mkdn")
+                    })
+                    .for_each(|path| {
+                        open_file(&app_handle, path);
+                    });
             }
 
             Ok(())
+        })
+        .build(tauri::generate_context!())
+        .expect("error while running tauri application")
+        .run(|app_handle, event| {
+            // Handle macOS file open events (when app is already running)
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Opened { urls } = event {
+                eprintln!("[RunEvent::Opened] Received {} file(s)", urls.len());
+                for url in urls {
+                    eprintln!("[RunEvent::Opened] File URL: {}", url);
+                    open_file(app_handle, url.to_string());
+                }
+            }
         });
-
-    builder
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
 }

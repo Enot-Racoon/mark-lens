@@ -15,6 +15,8 @@ export function useDragAndDrop() {
     const handleDrop = async (e: DragEvent) => {
       e.preventDefault();
 
+      console.log("handleDrop", e);
+
       const files = e.dataTransfer?.files;
       if (files && files.length > 0) {
         const file = files[0];

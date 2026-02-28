@@ -107,7 +107,7 @@
   margin-bottom: 1em;
 }
 
-.markdown-editor-content :global(a) {
+.markdown-editor-content.markdown-editor-content :global(a) {
   color: #58a6ff;
   text-decoration: none;
 }
