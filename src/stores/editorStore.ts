@@ -21,6 +21,9 @@ interface EditorState {
   files: MarkdownFile[];
   isModified: boolean;
   viewMode: "edit" | "preview" | "split";
+  sidebarWidth: number;
+  sidebarCollapsed: boolean;
+  splitRatio: number;
 }
 
 interface EditorActions {
@@ -37,6 +40,9 @@ interface EditorActions {
   setViewMode: (mode: "edit" | "preview" | "split") => void;
   markAsSaved: () => void;
   setupFileWatcher: () => void;
+  setSidebarWidth: (width: number) => void;
+  toggleSidebar: () => void;
+  setSplitRatio: (ratio: number) => void;
 }
 
 const initialState: EditorState = {
@@ -44,6 +50,9 @@ const initialState: EditorState = {
   files: [],
   isModified: false,
   viewMode: "split",
+  sidebarWidth: 250,
+  sidebarCollapsed: false,
+  splitRatio: 0.5,
 };
 
 export const useEditorStore = create<EditorState & EditorActions>()(
@@ -276,6 +285,18 @@ export const useEditorStore = create<EditorState & EditorActions>()(
       set({ isModified: false });
     },
 
+    setSidebarWidth: (width: number) => {
+      set({ sidebarWidth: Math.max(150, Math.min(500, width)) });
+    },
+
+    toggleSidebar: () => {
+      set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed }));
+    },
+
+    setSplitRatio: (ratio: number) => {
+      set({ splitRatio: Math.max(0.2, Math.min(0.8, ratio)) });
+    },
+
     setupFileWatcher: () => {
       // Global file change listener for auto-reload
       setupGlobalFileChangeListener(async (path) => {
@@ -307,6 +328,9 @@ export const useEditorStore = create<EditorState & EditorActions>()(
     storage: createJSONStorage(() => localStorage),
     partialize: (state) => ({
       viewMode: state.viewMode,
+      sidebarWidth: state.sidebarWidth,
+      sidebarCollapsed: state.sidebarCollapsed,
+      splitRatio: state.splitRatio,
     }),
   },
 ));

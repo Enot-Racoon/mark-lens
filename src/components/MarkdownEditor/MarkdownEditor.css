@@ -23,7 +23,20 @@
 }
 
 .markdown-editor-split .markdown-editor-pane {
-  width: 50%;
+  width: auto;
+}
+
+.markdown-editor-resize-handle {
+  width: 5px;
+  cursor: col-resize;
+  background-color: transparent;
+  transition: background-color 0.15s ease;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.markdown-editor-resize-handle:hover {
+  background-color: rgba(0, 136, 204, 0.3);
 }
 
 .markdown-editor-empty {
