@@ -171,6 +171,7 @@ export const Sidebar: React.FC = () => {
                   key={file.id}
                   className={`file-item ${currentFile?.id === file.id ? "file-item-active" : ""}`}
                   onClick={() => handleSelectFile(file)}
+                  title={file.path}
                 >
                   <span className="file-name">{file.name}</span>
                   <button
