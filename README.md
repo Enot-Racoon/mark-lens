@@ -17,15 +17,15 @@ A cross-platform desktop Markdown viewer and editor built with Tauri, React, and
 
 ## Keyboard Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Cmd/Ctrl + O` | Open file |
-| `Cmd/Ctrl + S` | Save file |
-| `Cmd/Ctrl + Shift + S` | Save As |
-| `Cmd/Ctrl + R` | Reload file |
-| `Cmd/Ctrl + W` | Close window |
-| `Cmd/Ctrl + Q` | Quit application |
-| `Cmd/Ctrl + F` | Toggle fullscreen |
+| Shortcut               | Action            |
+| ---------------------- | ----------------- |
+| `Cmd/Ctrl + O`         | Open file         |
+| `Cmd/Ctrl + S`         | Save file         |
+| `Cmd/Ctrl + Shift + S` | Save As           |
+| `Cmd/Ctrl + R`         | Reload file       |
+| `Cmd/Ctrl + W`         | Close window      |
+| `Cmd/Ctrl + Q`         | Quit application  |
+| `Cmd/Ctrl + F`         | Toggle fullscreen |
 
 ## Tech Stack
 
@@ -75,17 +75,20 @@ mark-lens/
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/yourusername/mark-lens.git
 cd mark-lens
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Run in development mode:
+
 ```bash
 npm run tauri dev
 ```
@@ -119,23 +122,24 @@ npm run test:run
 ### Code Style
 
 The project uses strict TypeScript configuration with:
+
 - No unused locals or parameters
 - No fallthrough cases in switch statements
 - Strict null checks
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start Vite dev server |
-| `npm run build` | Build frontend for production |
-| `npm run preview` | Preview production build |
-| `npm run tauri` | Tauri CLI commands |
-| `npm run tauri dev` | Run app in development mode |
-| `npm run tauri build` | Build app for production |
-| `npm run test` | Run tests in watch mode |
-| `npm run test:run` | Run tests once |
-| `npm run test:ui` | Run tests with UI |
+| Command                 | Description                    |
+| ----------------------- | ------------------------------ |
+| `npm run dev`           | Start Vite dev server          |
+| `npm run build`         | Build frontend for production  |
+| `npm run preview`       | Preview production build       |
+| `npm run tauri`         | Tauri CLI commands             |
+| `npm run tauri dev`     | Run app in development mode    |
+| `npm run tauri build`   | Build app for production       |
+| `npm run test`          | Run tests in watch mode        |
+| `npm run test:run`      | Run tests once                 |
+| `npm run test:ui`       | Run tests with UI              |
 | `npm run test:coverage` | Run tests with coverage report |
 
 ## License
