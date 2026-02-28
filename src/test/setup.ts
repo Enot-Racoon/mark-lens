@@ -1,11 +1,8 @@
 import "@testing-library/jest-dom";
 
-// Mock Tauri plugin APIs for testing
-vi.mock("@tauri-apps/plugin-fs", () => ({
-  readTextFile: vi.fn(),
-  writeTextFile: vi.fn(),
-  exists: vi.fn(),
-  readDir: vi.fn(),
+// Mock Tauri invoke for file operations
+vi.mock("@tauri-apps/api/core", () => ({
+  invoke: vi.fn(),
 }));
 
 vi.mock("@tauri-apps/plugin-dialog", () => ({

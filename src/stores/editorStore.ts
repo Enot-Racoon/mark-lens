@@ -1,10 +1,19 @@
 import { create } from "zustand";
-import { listen } from "@tauri-apps/api/event";
 import { open } from "@tauri-apps/plugin-dialog";
-import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import type { MarkdownFile } from "../types";
 import { generateId } from "../lib/markdown";
 import { useRecentFilesStore } from "./recentFilesStore";
+import {
+  readFile,
+  writeFile,
+  isMarkdownFile,
+  getFileName,
+  setupGlobalFileChangeListener,
+  setupReloadFileListener,
+  setupFileOpenListener,
+  watchFile,
+  unwatchFile,
+} from "../fs";
 
 interface EditorState {
   currentFile: MarkdownFile | null;
@@ -112,53 +121,69 @@ export const useEditorStore = create<EditorState & EditorActions>()(
 
     openFileByPath: async (path: string) => {
       console.log("[openFileByPath] Opening file:", path);
-      try {
-        const content = await readTextFile(path);
-        const name = path.split("/").pop() || path.split("\\").pop() || path;
 
-        const file: MarkdownFile = {
-          id: generateId(),
-          path,
-          name,
-          content,
-          lastModified: Date.now(),
-        };
-
-        const { files } = get();
-        const existingFile = files.find((f: MarkdownFile) => f.path === path);
-
-        if (existingFile) {
-          set({ currentFile: existingFile, isModified: false });
-        } else {
-          set((state) => ({
-            files: [...state.files, file],
-            currentFile: file,
-            isModified: false,
-          }));
-        }
-
-        // Add to recent files
-        useRecentFilesStore.getState().addRecentFile(path, name);
-
-        return file;
-      } catch (error) {
-        console.error("Failed to read file:", error);
+      // Validate file type
+      if (!isMarkdownFile(path)) {
+        console.error("[openFileByPath] Not a markdown file:", path);
         return null;
       }
+
+      const result = await readFile(path);
+      if (!result.success) {
+        console.error("[openFileByPath] Failed to read file:", result.error);
+        return null;
+      }
+
+      const file: MarkdownFile = {
+        id: generateId(),
+        path,
+        name: result.name || getFileName(path),
+        content: result.content,
+        lastModified: Date.now(),
+      };
+
+      const { files } = get();
+      const existingFile = files.find((f: MarkdownFile) => f.path === path);
+
+      if (existingFile) {
+        set({ currentFile: existingFile, isModified: false });
+      } else {
+        set((state) => ({
+          files: [...state.files, file],
+          currentFile: file,
+          isModified: false,
+        }));
+      }
+
+      // Add to recent files
+      useRecentFilesStore.getState().addRecentFile(path, file.name);
+
+      // Set up file watcher for auto-reload
+      unwatchFile(path);
+      watchFile(path, {
+        onFileChanged: async () => {
+          const { currentFile, isModified, reloadFile } = get();
+          if (!isModified && currentFile && currentFile.path === path) {
+            await reloadFile();
+          }
+        },
+      });
+
+      return file;
     },
 
     saveFile: async () => {
       const { currentFile } = get();
       if (!currentFile) return false;
 
-      try {
-        await writeTextFile(currentFile.path, currentFile.content);
-        set({ isModified: false });
-        return true;
-      } catch (error) {
-        console.error("Failed to save file:", error);
+      const result = await writeFile(currentFile.path, currentFile.content);
+      if (!result.success) {
+        console.error("Failed to save file:", result.error);
         return false;
       }
+
+      set({ isModified: false });
+      return true;
     },
 
     saveFileAs: async () => {
@@ -179,9 +204,14 @@ export const useEditorStore = create<EditorState & EditorActions>()(
 
         if (selected) {
           const path = Array.isArray(selected) ? selected[0] : selected;
-          await writeTextFile(path, currentFile.content);
+          const result = await writeFile(path, currentFile.content);
 
-          const name = path.split("/").pop() || path.split("\\").pop() || path;
+          if (!result.success) {
+            console.error("Failed to save file as:", result.error);
+            return null;
+          }
+
+          const name = getFileName(path);
           const newFile: MarkdownFile = {
             ...currentFile,
             id: generateId(),
@@ -216,23 +246,24 @@ export const useEditorStore = create<EditorState & EditorActions>()(
       const { currentFile } = get();
       if (!currentFile) return;
 
-      try {
-        const content = await readTextFile(currentFile.path);
-        const { files } = get();
-
-        const updatedFile = { ...currentFile, content };
-        const updatedFiles = files.map((f: MarkdownFile) =>
-          f.id === currentFile.id ? updatedFile : f,
-        );
-
-        set({
-          files: updatedFiles,
-          currentFile: updatedFile,
-          isModified: false,
-        });
-      } catch (error) {
-        console.error("Failed to reload file:", error);
+      const result = await readFile(currentFile.path);
+      if (!result.success) {
+        console.error("Failed to reload file:", result.error);
+        return;
       }
+
+      const { files } = get();
+
+      const updatedFile = { ...currentFile, content: result.content };
+      const updatedFiles = files.map((f: MarkdownFile) =>
+        f.id === currentFile.id ? updatedFile : f,
+      );
+
+      set({
+        files: updatedFiles,
+        currentFile: updatedFile,
+        isModified: false,
+      });
     },
 
     setViewMode: (mode: "edit" | "preview" | "split") => {
@@ -244,35 +275,27 @@ export const useEditorStore = create<EditorState & EditorActions>()(
     },
 
     setupFileWatcher: () => {
-      // Listen for file-changed events from Rust
-      listen("file-changed", async (event) => {
+      // Global file change listener for auto-reload
+      setupGlobalFileChangeListener(async (path) => {
         const { currentFile, isModified, reloadFile } = get();
-
-        // Only auto-reload if file is not modified and path matches
-        if (!isModified && currentFile && event.payload === currentFile.path) {
+        if (!isModified && currentFile && currentFile.path === path) {
           await reloadFile();
         }
       });
 
-      // Listen for reload-file event from menu
-      listen("reload-file", () => {
+      // Reload file from menu command
+      setupReloadFileListener(() => {
         get().reloadFile();
       });
 
-      // Listen for file-open-requested event from OS
-      listen<string>("file-open-requested", async (event) => {
-        const path = event.payload;
+      // Handle file open request from OS
+      setupFileOpenListener(async (path) => {
         console.log("[file-open-requested] Path received:", path);
-        if (path) {
-          const file = await get().openFileByPath(path);
-          if (file) {
-            console.log(
-              "[file-open-requested] File opened successfully:",
-              file.name,
-            );
-          } else {
-            console.error("[file-open-requested] Failed to open file:", path);
-          }
+        const file = await get().openFileByPath(path);
+        if (file) {
+          console.log("[file-open-requested] File opened successfully:", file.name);
+        } else {
+          console.error("[file-open-requested] Failed to open file:", path);
         }
       });
     },

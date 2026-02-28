@@ -1,3 +1,5 @@
+mod fs;
+
 use serde::{Deserialize, Serialize};
 use tauri::{
     menu::{Menu, MenuItem, Submenu},
@@ -23,12 +25,6 @@ impl Default for RecentFilesState {
     fn default() -> Self {
         Self { files: Vec::new() }
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct FileContent {
-    path: String,
-    content: String,
 }
 
 #[tauri::command]
@@ -87,17 +83,6 @@ fn clear_recent_files(app: AppHandle) {
         let state_path = app_dir.join("recent_files.json");
         std::fs::write(state_path, serde_json::to_string(&*state).unwrap_or_default()).ok();
     }
-}
-
-#[tauri::command]
-fn read_file_content(path: String) -> Result<FileContent, String> {
-    let content = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
-    Ok(FileContent { path, content })
-}
-
-#[tauri::command]
-fn write_file_content(path: String, content: String) -> Result<(), String> {
-    std::fs::write(&path, content).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -189,7 +174,6 @@ fn open_file(app: &AppHandle, path: String) {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .manage(tokio::sync::Mutex::new(RecentFilesState::default()))
@@ -197,9 +181,17 @@ pub fn run() {
             get_recent_files,
             add_recent_file,
             clear_recent_files,
-            read_file_content,
-            write_file_content,
-            open_in_default_editor
+            open_in_default_editor,
+            fs::read_file,
+            fs::write_file,
+            fs::file_exists,
+            fs::check_access,
+            fs::list_dir,
+            fs::get_file_metadata,
+            fs::create_dir,
+            fs::delete_path,
+            fs::rename_path,
+            fs::copy_file,
         ])
         .setup(|app| {
             eprintln!("[setup] Application starting up...");
