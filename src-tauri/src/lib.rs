@@ -171,14 +171,6 @@ fn open_file(app: &AppHandle, path: String) {
     );
 }
 
-/// Handle file drop event from frontend
-#[tauri::command]
-fn on_file_drop(app: AppHandle, path: String) -> Result<(), String> {
-    eprintln!("[on_file_drop] File dropped: {}", path);
-    open_file(&app, path);
-    Ok(())
-}
-
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -190,7 +182,6 @@ pub fn run() {
             add_recent_file,
             clear_recent_files,
             open_in_default_editor,
-            on_file_drop,
             fs::read_file,
             fs::write_file,
             fs::file_exists,
