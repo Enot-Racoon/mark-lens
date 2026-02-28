@@ -17,6 +17,20 @@ import {
   unwatchFile,
 } from "../fs";
 
+/**
+ * Update window title with file path and modified status
+ */
+function updateWindowTitle(path: string | null, isModified: boolean) {
+  if (!path) {
+    invoke("set_window_title", { title: "Mark Lens" })
+      .catch(console.error);
+  } else {
+    const modifier = isModified ? "* " : "";
+    invoke("set_window_title", { title: `${modifier}${path} - Mark Lens` })
+      .catch(console.error);
+  }
+}
+
 interface EditorState {
   currentFile: MarkdownFile | null;
   files: MarkdownFile[];
@@ -62,15 +76,8 @@ export const useEditorStore = create<EditorState & EditorActions>()(
       ...initialState,
 
     setCurrentFile: (file: MarkdownFile | null) => {
-      const prevFile = get().currentFile;
       set({ currentFile: file, isModified: false });
-      
-      // Update window title only if file changed
-      if (file?.path !== prevFile?.path) {
-        const title = file ? `${file.path} - Mark Lens` : "Mark Lens";
-        invoke("set_window_title", { title })
-          .catch(console.error);
-      }
+      updateWindowTitle(file?.path ?? null, false);
     },
 
     setContent: (content: string) => {
@@ -86,8 +93,7 @@ export const useEditorStore = create<EditorState & EditorActions>()(
         );
         set({ files });
         // Update window title with modified indicator
-        invoke("set_window_title", { title: `${currentFile.path}* - Mark Lens` })
-          .catch(console.error);
+        updateWindowTitle(currentFile.path, true);
       }
     },
 
@@ -178,9 +184,7 @@ export const useEditorStore = create<EditorState & EditorActions>()(
         }));
       }
 
-      // Update window title
-      invoke("set_window_title", { title: `${path} - Mark Lens` })
-        .catch(console.error);
+      updateWindowTitle(path, false);
 
       // Add to recent files
       useRecentFilesStore.getState().addRecentFile(path, file.name);
@@ -210,9 +214,7 @@ export const useEditorStore = create<EditorState & EditorActions>()(
       }
 
       set({ isModified: false });
-      // Update window title (remove modified indicator)
-      invoke("set_window_title", { title: `${currentFile.path} - Mark Lens` })
-        .catch(console.error);
+      updateWindowTitle(currentFile.path, false);
       return true;
     },
 
@@ -260,9 +262,7 @@ export const useEditorStore = create<EditorState & EditorActions>()(
             isModified: false,
           });
 
-          // Update window title with new filepath
-          invoke("set_window_title", { title: `${path} - Mark Lens` })
-            .catch(console.error);
+          updateWindowTitle(path, false);
 
           useRecentFilesStore.getState().addRecentFile(path, name);
 
@@ -299,9 +299,7 @@ export const useEditorStore = create<EditorState & EditorActions>()(
         isModified: false,
       });
 
-      // Update window title
-      invoke("set_window_title", { title: `${currentFile.path} - Mark Lens` })
-        .catch(console.error);
+      updateWindowTitle(currentFile.path, false);
     },
 
     setViewMode: (mode: "edit" | "preview" | "split") => {

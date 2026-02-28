@@ -2,7 +2,7 @@ import "@testing-library/jest-dom";
 
 // Mock Tauri invoke for file operations
 vi.mock("@tauri-apps/api/core", () => ({
-  invoke: vi.fn(),
+  invoke: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@tauri-apps/plugin-dialog", () => ({
