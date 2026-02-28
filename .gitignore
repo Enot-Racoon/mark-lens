@@ -38,3 +38,5 @@ Cargo.lock
 coverage
 *.gcno
 *.gcda
+
+build
