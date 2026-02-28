@@ -9,14 +9,55 @@ export function useDragAndDrop() {
   useEffect(() => {
     const handleDragOver = (e: DragEvent) => {
       e.preventDefault();
-      e.dataTransfer!.dropEffect = "copy";
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = "copy";
+      }
     };
 
     const handleDrop = async (e: DragEvent) => {
       e.preventDefault();
+      e.stopPropagation();
 
-      console.log("handleDrop", e);
+      // Handle file paths from OS (macOS Finder, Windows Explorer)
+      // Tauri provides file paths through dataTransfer items
+      const items = e.dataTransfer?.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.kind === "file" && item.webkitGetAsEntry) {
+            const entry = item.webkitGetAsEntry();
+            if (entry && entry.isFile) {
+              const fileEntry = entry as FileSystemFileEntry;
+              
+              // Check if it's a markdown file
+              const isMarkdown = /\.(md|markdown|mdown|mkd|mkdn)$/i.test(fileEntry.name);
+              if (isMarkdown) {
+                // For security reasons, we can't get the full path directly
+                // We need to use the file object from dataTransfer.files
+                const file = e.dataTransfer?.files[i];
+                if (file) {
+                  try {
+                    const content = await file.text();
+                    const newFile = {
+                      id: generateId(),
+                      path: fileEntry.name,
+                      name: fileEntry.name,
+                      content,
+                      lastModified: file.lastModified,
+                    };
+                    addFile(newFile);
+                  } catch (error) {
+                    console.error("Failed to read dropped file:", error);
+                  }
+                }
+              }
+            }
+          }
+        }
+        return;
+      }
 
+      // Fallback: handle files array directly
       const files = e.dataTransfer?.files;
       if (files && files.length > 0) {
         const file = files[0];
@@ -24,23 +65,15 @@ export function useDragAndDrop() {
 
         if (isMarkdown) {
           try {
-            // Use Tauri FS API to read the file
-            // We need to get the file path from the OS
-            const path = (file as any).path;
-            if (path) {
-              await openFileByPath(path);
-            } else {
-              // Fallback: read file content directly
-              const content = await file.text();
-              const newFile = {
-                id: generateId(),
-                path: file.name,
-                name: file.name,
-                content,
-                lastModified: file.lastModified,
-              };
-              addFile(newFile);
-            }
+            const content = await file.text();
+            const newFile = {
+              id: generateId(),
+              path: file.name,
+              name: file.name,
+              content,
+              lastModified: file.lastModified,
+            };
+            addFile(newFile);
           } catch (error) {
             console.error("Failed to open dropped file:", error);
           }
