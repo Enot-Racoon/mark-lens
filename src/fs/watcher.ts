@@ -136,12 +136,20 @@ export function setupFileOpenListener(
 ): () => void {
   let unlisten: UnlistenFn | null = null;
 
+  console.log("[setupFileOpenListener] Setting up listener for file-open-requested");
+  
   listen<string>("file-open-requested", (event) => {
-    if (event.payload) {
-      onFileOpen(event.payload);
+    console.log("[file-open-requested] Event received:", event);
+    const payload = event.payload;
+    console.log("[file-open-requested] Payload:", payload);
+    if (payload) {
+      onFileOpen(payload);
     }
   }).then((fn) => {
     unlisten = fn;
+    console.log("[setupFileOpenListener] Listener registered");
+  }).catch((err) => {
+    console.error("[setupFileOpenListener] Failed to register listener:", err);
   });
 
   return () => {

@@ -158,7 +158,11 @@ pub fn build_menu(app: &AppHandle) -> Result<Menu<tauri::Wry>, tauri::Error> {
 
 fn open_file(app: &AppHandle, path: String) {
     eprintln!("[open_file] Opening file: {}", path);
-    let _ = app.emit("file-open-requested", &path);
+    eprintln!("[open_file] Emitting file-open-requested event");
+    
+    let result = app.emit("file-open-requested", &path);
+    eprintln!("[open_file] Event emit result: {:?}", result);
+    
     add_recent_file(
         app.clone(),
         path.clone(),
