@@ -275,7 +275,6 @@ fn setup_menu_events(app: &AppHandle) {
 
 /// Shows the About dialog with application information.
 fn handle_about_event(app: &AppHandle) {
-    let _ = app.show();
     let app_handle = app.clone();
     tauri::async_runtime::spawn(async move {
         app_handle
@@ -400,6 +399,8 @@ pub fn run() {
         .expect("error while running tauri application")
         .run(|app_handle, event| {
             // Handle file open events (when app is already running)
+            // RunEvent::Opened is only available on macOS
+            #[cfg(target_os = "macos")]
             if let tauri::RunEvent::Opened { urls } = event {
                 handle_opened_urls(&app_handle, urls);
             }
