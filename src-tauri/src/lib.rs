@@ -189,6 +189,17 @@ fn set_window_title(app: AppHandle, title: String) {
     }
 }
 
+
+/// Add a file to the startup files list
+#[tauri::command]
+fn add_to_startup_files(app: AppHandle, path: String) {
+    let startup_files = app.state::<StartupFiles>();
+    let mut paths = startup_files.paths.lock().unwrap();
+    if !paths.contains(&path) {
+        paths.push(path);
+    }
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -203,6 +214,7 @@ pub fn run() {
             open_in_default_editor,
             get_startup_files,
             clear_startup_files,
+            add_to_startup_files,
             set_window_title,
             fs::read_file,
             fs::write_file,
@@ -295,9 +307,6 @@ pub fn run() {
             let args: Vec<String> = std::env::args().skip(1).collect();
             eprintln!("[setup] Command line args: {:?}", args);
 
-            // Store startup files in state
-            let startup_files = app.state::<StartupFiles>();
-
             // Filter only markdown files (ignore cargo/tauri flags in dev mode)
             for path in args.into_iter()
                 .filter(|path| {
@@ -309,7 +318,7 @@ pub fn run() {
                 })
             {
                 eprintln!("[setup] Storing startup file: {}", path);
-                startup_files.paths.lock().unwrap().push(path.clone());
+                add_to_startup_files(app.handle().clone(), path.clone());
             }
 
             Ok(())
@@ -322,13 +331,12 @@ pub fn run() {
             if let tauri::RunEvent::Opened { urls } = event {
                 eprintln!("[RunEvent::Opened] Received {} file(s)", urls.len());
 
-                let startup_files = app_handle.state::<StartupFiles>();
                 for url in urls {
                     eprintln!("[RunEvent::Opened] File URL: {}", url);
                     // Convert file:// URL to path
                     let path = url.to_string();
                     let path = path.strip_prefix("file://").unwrap_or(&path);
-                    startup_files.paths.lock().unwrap().push(path.to_string());
+                    add_to_startup_files(app_handle.clone(), path.to_string());
                 }
             }
 
@@ -337,12 +345,11 @@ pub fn run() {
             if let tauri::RunEvent::Opened { urls } = event {
                 eprintln!("[RunEvent::Opened] Received {} file(s)", urls.len());
 
-                let startup_files = app_handle.state::<StartupFiles>();
                 for url in urls {
                     eprintln!("[RunEvent::Opened] File URL: {}", url);
                     let path = url.to_string();
                     let path = path.strip_prefix("file://").unwrap_or(&path);
-                    startup_files.paths.lock().unwrap().push(path.to_string());
+                    add_to_startup_files(app_handle.clone(), path.to_string());
                 }
             }
         });
