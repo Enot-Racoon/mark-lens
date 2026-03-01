@@ -5,6 +5,8 @@
 
 A cross-platform desktop Markdown viewer and editor built with Tauri, React, and TypeScript.
 
+![Screenshot](docs/screen.png)
+
 ## Features
 
 - **Live Preview**: Edit Markdown with real-time preview
