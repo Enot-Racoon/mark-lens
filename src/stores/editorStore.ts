@@ -62,6 +62,7 @@ interface EditorActions {
   setSidebarWidth: (width: number) => void;
   toggleSidebar: () => void;
   setSplitRatio: (ratio: number) => void;
+  openStartupFiles: () => Promise<void>;
   /** Internal: trigger UI update (title bar) */
   _updateUI: () => void;
 }
@@ -101,6 +102,18 @@ export const useEditorStore = create<EditorState & EditorActions>()(
         const hasNamesake = namesakes.length > 1;
 
         updateWindowTitle(hasNamesake ? currentFile?.path : cn, isModified);
+      },
+
+      openStartupFiles: async () => {
+        try {
+          const paths = await invoke<string[]>("get_startup_files");
+          paths.forEach((path) => {
+            get().openFileByPath(path);
+          });
+          invoke("clear_startup_files").catch(console.error);
+        } catch (error) {
+          console.error("Failed to open startup files:", error);
+        }
       },
 
       setContent: (content: string) => {
