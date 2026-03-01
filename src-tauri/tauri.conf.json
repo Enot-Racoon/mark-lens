@@ -82,7 +82,8 @@
       "exceptionDomain": "",
       "frameworks": [],
       "providerShortName": null,
-      "signingIdentity": null
+      "signingIdentity": null,
+      "entitlements": null
     },
     "windows": {
       "certificateThumbprint": null,
