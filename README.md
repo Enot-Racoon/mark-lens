@@ -7,6 +7,18 @@ A cross-platform desktop Markdown viewer and editor built with Tauri, React, and
 
 ![Screenshot](docs/screen.png)
 
+## Download
+
+| macOS                                                                                                                                                                   | Windows                                                                                                                                                                    | Linux                                                                                                                                                                          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [![macOS](https://img.shields.io/badge/download-dmg-black?logo=apple)](https://github.com/Enot-Racoon/mark-lens/releases/download/v0.1.0/Mark.Lens_0.1.0_universal.dmg) | [![Windows](https://img.shields.io/badge/download-exe-blue?logo=windows)](https://github.com/Enot-Racoon/mark-lens/releases/download/v0.1.0/Mark.Lens_0.1.0_x64-setup.exe) | [![Linux](https://img.shields.io/badge/download-AppImage-orange?logo=linux)](https://github.com/Enot-Racoon/mark-lens/releases/download/v0.1.0/Mark.Lens_0.1.0_amd64.AppImage) |
+
+**Alternative formats:**
+
+- **macOS**: [Universal DMG](https://github.com/Enot-Racoon/mark-lens/releases/download/v0.1.0/Mark.Lens_0.1.0_universal.dmg)
+- **Windows**: [MSI](https://github.com/Enot-Racoon/mark-lens/releases/download/v0.1.0/Mark.Lens_0.1.0_x64_en-US.msi)
+- **Linux**: [DEB](https://github.com/Enot-Racoon/mark-lens/releases/download/v0.1.0/Mark.Lens_0.1.0_amd64.deb)
+
 ## Features
 
 - **Live Preview**: Edit Markdown with real-time preview
