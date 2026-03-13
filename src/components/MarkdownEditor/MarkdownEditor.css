@@ -153,12 +153,12 @@
   outline: none;
 }
 
-.markdown-editor-content :global(h1),
-.markdown-editor-content :global(h2),
-.markdown-editor-content :global(h3),
-.markdown-editor-content :global(h4),
-.markdown-editor-content :global(h5),
-.markdown-editor-content :global(h6) {
+.markdown-editor-content h1,
+.markdown-editor-content h2,
+.markdown-editor-content h3,
+.markdown-editor-content h4,
+.markdown-editor-content h5,
+.markdown-editor-content h6 {
   margin-top: 1.5em;
   margin-bottom: 0.5em;
   font-weight: 600;
@@ -166,37 +166,37 @@
   color: #fff;
 }
 
-.markdown-editor-content :global(h1) {
+.markdown-editor-content h1 {
   font-size: 2em;
   border-bottom: 1px solid #333;
   padding-bottom: 0.3em;
 }
 
-.markdown-editor-content :global(h2) {
+.markdown-editor-content h2 {
   font-size: 1.5em;
   border-bottom: 1px solid #333;
   padding-bottom: 0.3em;
 }
 
-.markdown-editor-content :global(h3) {
+.markdown-editor-content h3 {
   font-size: 1.25em;
 }
 
-.markdown-editor-content :global(p) {
+.markdown-editor-content p {
   margin-top: 0;
   margin-bottom: 1em;
 }
 
-.markdown-editor-content.markdown-editor-content :global(a) {
-  color: #58a6ff;
+.markdown-editor-content a {
+  color: #68A8F7 !important;
   text-decoration: none;
 }
 
-.markdown-editor-content :global(a:hover) {
+.markdown-editor-content a:hover {
   text-decoration: underline;
 }
 
-.markdown-editor-content :global(code) {
+.markdown-editor-content code {
   background-color: #333;
   padding: 0.2em 0.4em;
   border-radius: 3px;
@@ -204,69 +204,69 @@
   font-size: 0.9em;
 }
 
-.markdown-editor-content :global(pre) {
+.markdown-editor-content pre {
   background-color: #333;
   padding: 1rem;
   border-radius: 6px;
   overflow-x: auto;
 }
 
-.markdown-editor-content :global(pre code) {
+.markdown-editor-content pre code {
   background-color: transparent;
   padding: 0;
 }
 
-.markdown-editor-content :global(blockquote) {
+.markdown-editor-content blockquote {
   margin: 0;
   padding: 0 1em;
   color: #888;
   border-left: 4px solid #333;
 }
 
-.markdown-editor-content :global(ul),
-.markdown-editor-content :global(ol) {
+.markdown-editor-content ul,
+.markdown-editor-content ol {
   padding-left: 2em;
   margin-top: 0;
   margin-bottom: 1em;
 }
 
-.markdown-editor-content :global(li) {
+.markdown-editor-content li {
   margin-top: 0.25em;
 }
 
-.markdown-editor-content :global(hr) {
+.markdown-editor-content hr {
   border: none;
   border-top: 1px solid #333;
   margin: 1.5em 0;
 }
 
-.markdown-editor-content :global(table) {
+.markdown-editor-content table {
   border-collapse: collapse;
   width: 100%;
   margin: 1em 0;
 }
 
-.markdown-editor-content :global(th),
-.markdown-editor-content :global(td) {
+.markdown-editor-content th,
+.markdown-editor-content td {
   border: 1px solid #333;
   padding: 0.5em 1em;
   text-align: left;
 }
 
-.markdown-editor-content :global(th) {
+.markdown-editor-content th {
   background-color: #333;
   font-weight: 600;
 }
 
-.markdown-editor-content :global(tr:nth-child(even)) {
+.markdown-editor-content tr:nth-child(even) {
   background-color: #2a2a2a;
 }
 
-.markdown-editor-content :global(img) {
+.markdown-editor-content img {
   max-width: 100%;
   height: auto;
 }
 
-.markdown-editor-content :global(input[type="checkbox"]) {
+.markdown-editor-content input[type="checkbox"] {
   margin-right: 0.5em;
 }
