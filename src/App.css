@@ -33,7 +33,18 @@ body,
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
-  user-select: none;
+  /* Allow text selection by default - draggable regions should opt-in to user-select: none */
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Explicitly allow text selection in editable areas */
+textarea,
+input,
+[contenteditable],
+[contenteditable] * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
 }
 
 .app,

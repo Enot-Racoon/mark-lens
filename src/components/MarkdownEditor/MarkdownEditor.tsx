@@ -2,16 +2,21 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useEditorStore } from "../../stores";
 import { parseMarkdown, sanitizeHtml } from "../../lib/markdown";
 import "./MarkdownEditor.css";
+import CopyButton from "../CopyButton";
 
 export const MarkdownEditor: React.FC = () => {
-  const { currentFile, setContent, viewMode, splitRatio, setSplitRatio } = useEditorStore();
+  const { currentFile, setContent, viewMode, splitRatio, setSplitRatio } =
+    useEditorStore();
   const [isResizing, setIsResizing] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState<"editor" | "preview" | null>(
+    null,
+  );
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setContent(e.target.value);
     },
-    [setContent]
+    [setContent],
   );
 
   const previewHtml = useMemo(() => {
@@ -33,7 +38,7 @@ export const MarkdownEditor: React.FC = () => {
       const newRatio = (e.clientX - rect.left) / rect.width;
       setSplitRatio(newRatio);
     },
-    [isResizing, setSplitRatio]
+    [isResizing, setSplitRatio],
   );
 
   const handleResizeEnd = useCallback(() => {
@@ -57,6 +62,28 @@ export const MarkdownEditor: React.FC = () => {
     };
   }, [isResizing, handleResize, handleResizeEnd]);
 
+  const handlePreviewInput = useCallback(
+    (e: React.SyntheticEvent<HTMLDivElement>) => {
+      // Light inline editing: sync contenteditable changes back to store
+      setContent(e.currentTarget.innerText);
+    },
+    [setContent],
+  );
+
+  const handleCopy = useCallback(
+    (type: "editor" | "preview") => async () => {
+      if (!currentFile) return;
+      try {
+        await navigator.clipboard.writeText(currentFile.content);
+        setCopyFeedback(type);
+        setTimeout(() => setCopyFeedback(null), 2000);
+      } catch (err) {
+        console.error("Failed to copy:", err);
+      }
+    },
+    [currentFile],
+  );
+
   if (!currentFile) {
     return (
       <div className="markdown-editor-empty">
@@ -76,6 +103,29 @@ export const MarkdownEditor: React.FC = () => {
           className="markdown-editor-pane"
           style={{ flex: `0 0 ${splitRatio * 100}%` }}
         >
+          <div className="markdown-editor-pane-header">
+            <span className="markdown-editor-pane-title">Editor</span>
+            <button
+              className="markdown-editor-copy-btn"
+              onClick={handleCopy("editor")}
+              title="Copy to clipboard"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              {copyFeedback === "editor" && (
+                <span className="markdown-editor-copy-tooltip">Copied!</span>
+              )}
+            </button>
+          </div>
           <textarea
             className="markdown-editor-textarea"
             value={currentFile.content}
@@ -93,8 +143,34 @@ export const MarkdownEditor: React.FC = () => {
           className="markdown-editor-pane markdown-editor-preview"
           style={{ flex: `1 1 ${(1 - splitRatio) * 100}%` }}
         >
+          <div className="markdown-editor-pane-header">
+            <span className="markdown-editor-pane-title">Preview</span>
+            <button
+              className="markdown-editor-copy-btn"
+              onClick={handleCopy("preview")}
+              title="Copy to clipboard"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              {copyFeedback === "preview" && (
+                <span className="markdown-editor-copy-tooltip">Copied!</span>
+              )}
+            </button>
+          </div>
           <div
             className="markdown-editor-content"
+            contentEditable
+            suppressContentEditableWarning
+            onInput={handlePreviewInput}
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
         </div>
@@ -106,6 +182,13 @@ export const MarkdownEditor: React.FC = () => {
     <div className={`markdown-editor markdown-editor-${viewMode}`}>
       {showEditor && (
         <div className="markdown-editor-pane">
+          <div className="markdown-editor-pane-header">
+            <span className="markdown-editor-pane-title">Editor</span>
+            <CopyButton
+              onClick={handleCopy("editor")}
+              showFeedback={copyFeedback === "editor"}
+            />
+          </div>
           <textarea
             className="markdown-editor-textarea"
             value={currentFile.content}
@@ -117,8 +200,18 @@ export const MarkdownEditor: React.FC = () => {
       )}
       {showPreview && (
         <div className="markdown-editor-pane markdown-editor-preview">
+          <div className="markdown-editor-pane-header">
+            <span className="markdown-editor-pane-title">Preview</span>
+            <CopyButton
+              onClick={handleCopy("preview")}
+              showFeedback={copyFeedback === "preview"}
+            />
+          </div>
           <div
             className="markdown-editor-content"
+            contentEditable
+            suppressContentEditableWarning
+            onInput={handlePreviewInput}
             dangerouslySetInnerHTML={{ __html: previewHtml }}
           />
         </div>
